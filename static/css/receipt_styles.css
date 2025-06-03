@@ -1,0 +1,229 @@
+
+/* Receipt Styles */
+.receipt {
+    background-color: var(--secondary-color);
+    border: 1px solid #ccc;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: 'Roboto', sans-serif;
+    color: #222;
+    position: relative;
+}
+
+.receipt-top {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 15px;
+}
+
+.receipt-logo {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+}
+
+.receipt-logo-text {
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--primary-color);
+    padding: 8px 12px;
+    border: 2px solid var(--primary-color);
+    margin-right: 12px;
+}
+
+.receipt-logo-full {
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.receipt-company-info {
+    flex: 1;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.receipt-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.receipt-number {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.receipt-title {
+    font-weight: bold;
+    font-size: 18px;
+    padding: 5px 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+}
+
+.receipt-content {
+    margin-bottom: 30px;
+}
+
+.receipt-field {
+    display: flex;
+    margin-bottom: 12px;
+    border-bottom: 1px dotted #999;
+}
+
+.field-label {
+    width: 120px;
+    font-weight: bold;
+}
+
+.field-value {
+    flex: 1;
+}
+
+.receipt-row {
+    display: flex;
+    gap: 30px;
+}
+
+.receipt-currency {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    margin-left: 120px;
+    margin-bottom: 15px;
+    font-style: italic;
+}
+
+.receipt-footer {
+    margin-top: 30px;
+    border-top: 1px solid #333;
+    padding-top: 15px;
+}
+
+.merchant-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+/* Cash Invoice Specific Styles */
+.receipt-title-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.invoice-title {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.invoice-number {
+    font-weight: bold;
+}
+
+.invoice-customer-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.address-field {
+    margin-bottom: 25px;
+}
+
+.invoice-table {
+    border: 1px solid #333;
+    margin-bottom: 30px;
+}
+
+.invoice-table-header {
+    display: grid;
+    grid-template-columns: 40px 3fr 1fr 1fr 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 10px;
+    font-weight: bold;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.invoice-table-row {
+    display: grid;
+    grid-template-columns: 40px 3fr 1fr 1fr 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.invoice-total-section {
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+.invoice-signature-section {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 50px;
+}
+
+.signature-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+@media print {
+    .receipt {
+        background-color: var(--secondary-color) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        border: none;
+        padding: 20px;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .invoice-table-header {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .receipt-title {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #printable-receipt, #printable-receipt * {
+            visibility: visible;
+        }
+        #printable-receipt {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+    }
+}
