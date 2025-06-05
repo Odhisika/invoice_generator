@@ -1,0 +1,457 @@
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .landing-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            text-align: center;
+            color: white;
+            margin: 0 auto 40px auto;
+            padding: 40px 20px;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .welcome-section h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .welcome-section p {
+            font-size: clamp(1rem, 3vw, 1.25rem);
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Dashboard Stats */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.18);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .stat-number {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* Receipt Options */
+        .receipt-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .btn {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .receipt-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .invoice-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .btn-content {
+            padding: 30px 25px;
+        }
+
+        .btn-content h3 {
+            font-size: clamp(1.25rem, 3vw, 1.5rem);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .btn-content p {
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        /* Management Options */
+        .management-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .management-btn {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.18);
+        }
+
+        .management-btn .btn-content {
+            padding: 25px 20px;
+        }
+
+        .management-btn h3 {
+            color: #667eea;
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+        }
+
+        .management-btn p {
+            font-size: clamp(0.85rem, 2vw, 0.95rem);
+            color: #666;
+        }
+
+        /* Recent Activity */
+        .recent-activity {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.18);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .recent-activity h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            text-align: center;
+        }
+
+        .recent-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .recent-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: clamp(1.2rem, 2.5vw, 1.4rem);
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+
+        .recent-list {
+            margin-bottom: 15px;
+        }
+
+        .recent-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .recent-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .item-number {
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+        }
+
+        .item-detail {
+            color: #666;
+            font-size: clamp(0.85rem, 2vw, 0.9rem);
+            margin-top: 2px;
+            display: block;
+        }
+
+        .item-date {
+            color: #999;
+            font-size: clamp(0.8rem, 2vw, 0.85rem);
+            white-space: nowrap;
+        }
+
+        .view-all-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            transition: color 0.3s ease;
+        }
+
+        .view-all-link:hover {
+            color: #764ba2;
+        }
+
+        /* Company Info */
+        .company-info {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.18);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .company-info h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        .company-info p {
+            margin-bottom: 15px;
+            color: #666;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            line-height: 1.6;
+        }
+
+        .company-info a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .company-info a:hover {
+            text-decoration: underline;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            header {
+                padding: 20px 0;
+                margin-bottom: 25px;
+            }
+
+            .logo {
+                padding: 0 15px;
+                gap: 15px;
+            }
+
+            .logo-image {
+                width: 70px;
+                height: 70px;
+                border-width: 3px;
+            }
+
+            .landing-content {
+                padding: 15px;
+            }
+
+            .welcome-section {
+                padding: 30px 15px;
+                margin-bottom: 30px;
+            }
+
+            .dashboard-stats {
+                gap: 15px;
+                margin-bottom: 30px;
+            }
+
+            .stat-card {
+                padding: 25px 15px;
+            }
+
+            .receipt-options {
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+
+            .management-options {
+                gap: 15px;
+                margin-bottom: 30px;
+            }
+
+            .recent-activity {
+                padding: 25px 20px;
+                margin-bottom: 30px;
+            }
+
+            .recent-sections {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .recent-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .item-date {
+                align-self: flex-end;
+            }
+
+            .company-info {
+                padding: 25px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .logo-full {
+                align-items: center;
+            }
+
+            .logo-image {
+                width: 60px;
+                height: 60px;
+            }
+
+            .landing-content {
+                padding: 10px;
+            }
+
+            .welcome-section {
+                padding: 20px 10px;
+            }
+
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .receipt-options {
+                grid-template-columns: 1fr;
+            }
+
+            .management-options {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-content {
+                padding: 25px 20px;
+            }
+
+            .recent-activity {
+                padding: 20px 15px;
+            }
+
+            .company-info {
+                padding: 20px 15px;
+            }
+        }
+
+        /* Large screen optimizations */
+        @media (min-width: 1200px) {
+            header {
+                padding: 30px 0;
+            }
+
+            .logo-image {
+                width: 90px;
+                height: 90px;
+                border-width: 5px;
+            }
+
+            .logo {
+                gap: 25px;
+            }
+
+            .landing-content {
+                padding: 40px;
+            }
+
+            .welcome-section {
+                padding: 60px 20px;
+            }
+
+            .dashboard-stats {
+                max-width: 600px;
+                margin: 0 auto 50px auto;
+            }
+        }
+
+        /* Animation for smooth loading */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .landing-content > * {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .landing-content > *:nth-child(2) { animation-delay: 0.1s; }
+        .landing-content > *:nth-child(3) { animation-delay: 0.2s; }
+        .landing-content > *:nth-child(4) { animation-delay: 0.3s; }
+        .landing-content > *:nth-child(5) { animation-delay: 0.4s; }
+        .landing-content > *:nth-child(6) { animation-delay: 0.5s; }
+   

@@ -1,113 +1,115 @@
-
-{% extends 'home/base.html' %}
-
-{% block title %}LuckyTech Receipt Generator{% endblock %}
-
-{% block content %}
-<div class="landing-content">
-    <div class="welcome-section">
-        <h1>Receipt Generator System</h1>
-        <p>Generate official receipts and cash invoices for your business transactions</p>
-    </div>
-    
-    <!-- Statistics Dashboard -->
-    <div class="dashboard-stats">
-        <div class="stat-card">
-            <div class="stat-number">{{ total_receipts }}</div>
-            <div class="stat-label">Total Receipts</div>
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuckyTech Receipt Generator</title>
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+</head>
+<body>
+    <div class="landing-content">
+        <div class="welcome-section">
+            <img src="{% static 'images/logo.jpg' %}" alt="LuckyTech Logo" class="logo">
+            <h1>Welcome to LuckyTech Innovation Ground</h1>
+            <h1>Receipt Generator System</h1>
+            <p>Generate official receipts and cash invoices for your business transactions</p>
         </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ total_invoices }}</div>
-            <div class="stat-label">Total Invoices</div>
-        </div>
-    </div>
-    
-    <div class="receipt-options">
-        <a href="{% url 'home:official_receipt' %}" class="btn receipt-btn">
-            <div class="btn-content">
-                <h3>Official Receipt</h3>
-                <p>Generate a receipt for payments received</p>
-            </div>
-        </a>
-        <a href="{% url 'home:cash_invoice' %}" class="btn invoice-btn">
-            <div class="btn-content">
-                <h3>Cash Sales/Invoice</h3>
-                <p>Generate an invoice for products sold</p>
-            </div>
-        </a>
-    </div>
-    
-    <!-- Management Options -->
-    <div class="management-options">
-        <a href="{% url 'home:receipt_list' %}" class="btn management-btn">
-            <div class="btn-content">
-                <h3>📋 View All Receipts</h3>
-                <p>Browse and manage official receipts</p>
-            </div>
-        </a>
-        <a href="{% url 'home:invoice_list' %}" class="btn management-btn">
-            <div class="btn-content">
-                <h3>📊 View All Invoices</h3>
-                <p>Browse and manage cash invoices</p>
-            </div>
-        </a>
-    </div>
-    
-    <!-- Recent Activity -->
-    {% if recent_receipts or recent_invoices %}
-    <div class="recent-activity">
-        <h2>Recent Activity</h2>
         
-        <div class="recent-sections">
-            {% if recent_receipts %}
-            <div class="recent-section">
-                <h3>Recent Receipts</h3>
-                <div class="recent-list">
-                    {% for receipt in recent_receipts %}
-                    <div class="recent-item">
-                        <div class="item-info">
-                            <span class="item-number">{{ receipt.receipt_number }}</span>
-                            <span class="item-detail">{{ receipt.received_from }} - {{ receipt.formatted_amount }}</span>
-                        </div>
-                        <div class="item-date">{{ receipt.date_created|date:"M d" }}</div>
-                    </div>
-                    {% endfor %}
-                </div>
-                <a href="{% url 'home:receipt_list' %}" class="view-all-link">View all receipts →</a>
+        <!-- Statistics Dashboard -->
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_receipts }}</div>
+                <div class="stat-label">Total Receipts</div>
             </div>
-            {% endif %}
+            <div class="stat-card">
+                <div class="stat-number">{{ total_invoices }}</div>
+                <div class="stat-label">Total Invoices</div>
+            </div>
+        </div>
+        
+        <div class="receipt-options">
+            <a href="{% url 'home:official_receipt' %}" class="btn receipt-btn">
+                <div class="btn-content">
+                    <h3>Official Receipt</h3>
+                    <p>Generate a receipt for payments received</p>
+                </div>
+            </a>
+            <a href="{% url 'home:cash_invoice' %}" class="btn invoice-btn">
+                <div class="btn-content">
+                    <h3>Cash Sales/Invoice</h3>
+                    <p>Generate an invoice for products sold</p>
+                </div>
+            </a>
+        </div>
+        
+        <!-- Management Options -->
+        <div class="management-options">
+            <a href="{% url 'home:receipt_list' %}" class="btn management-btn">
+                <div class="btn-content">
+                    <h3>📋 View All Receipts</h3>
+                    <p>Browse and manage official receipts</p>
+                </div>
+            </a>
+            <a href="{% url 'home:invoice_list' %}" class="btn management-btn">
+                <div class="btn-content">
+                    <h3>📊 View All Invoices</h3>
+                    <p>Browse and manage cash invoices</p>
+                </div>
+            </a>
+        </div>
+        
+        <!-- Recent Activity -->
+        {% if recent_receipts or recent_invoices %}
+        <div class="recent-activity">
+            <h2>Recent Activity</h2>
             
-            {% if recent_invoices %}
-            <div class="recent-section">
-                <h3>Recent Invoices</h3>
-                <div class="recent-list">
-                    {% for invoice in recent_invoices %}
-                    <div class="recent-item">
-                        <div class="item-info">
-                            <span class="item-number">{{ invoice.invoice_number }}</span>
-                            <span class="item-detail">{{ invoice.customer_name }} - {{ invoice.formatted_total }}</span>
+            <div class="recent-sections">
+                {% if recent_receipts %}
+                <div class="recent-section">
+                    <h3>Recent Receipts</h3>
+                    <div class="recent-list">
+                        {% for receipt in recent_receipts %}
+                        <div class="recent-item">
+                            <div class="item-info">
+                                <span class="item-number">{{ receipt.receipt_number }}</span>
+                                <span class="item-detail">{{ receipt.received_from }} - {{ receipt.formatted_amount }}</span>
+                            </div>
+                            <div class="item-date">{{ receipt.date_created|date:"M d" }}</div>
                         </div>
-                        <div class="item-date">{{ invoice.date_created|date:"M d" }}</div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
+                    <a href="{% url 'home:receipt_list' %}" class="view-all-link">View all receipts →</a>
                 </div>
-                <a href="{% url 'home:invoice_list' %}" class="view-all-link">View all invoices →</a>
+                {% endif %}
+                
+                {% if recent_invoices %}
+                <div class="recent-section">
+                    <h3>Recent Invoices</h3>
+                    <div class="recent-list">
+                        {% for invoice in recent_invoices %}
+                        <div class="recent-item">
+                            <div class="item-info">
+                                <span class="item-number">{{ invoice.invoice_number }}</span>
+                                <span class="item-detail">{{ invoice.customer_name }} - {{ invoice.formatted_total }}</span>
+                            </div>
+                            <div class="item-date">{{ invoice.date_created|date:"M d" }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <a href="{% url 'home:invoice_list' %}" class="view-all-link">View all invoices →</a>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
+        </div>
+        {% endif %}
+        
+        <div class="company-info">
+            <h2>About LuckyTech Innovation Ground</h2>
+            <p>Dealers; Computers, Laptops, Accessories, Repairs. IT support for offices and Homes, Networking, Apps, Websites, Animations, Robotics, Data Recovery & engaging in Tech innovative products.</p>
+            <p>Location: Adjacent Apex Bank-Koforidua</p>
+            <p>Website: <a href="http://www.lig.com.gh" target="_blank">www.lig.com.gh</a></p>
         </div>
     </div>
-    {% endif %}
-    
-    <div class="company-info">
-        <h2>About LuckyTech Innovation Ground</h2>
-        <p>Dealers; Computers, Laptops, Accessories, Repairs. IT support for offices and Homes, Networking, Apps, Websites, Animations, Robotics, Data Recovery & engaging in Tech innovative products.</p>
-        <p>Location: Adjacent Apex Bank-Koforidua</p>
-        <p>Website: <a href="http://www.lig.com.gh" target="_blank">www.lig.com.gh</a></p>
-    </div>
-</div>
-{% endblock %}
-
-
-
-
-
+</body>
+</html>

@@ -4,6 +4,14 @@
 {% block title %}Invoice Detail - LuckyTech{% endblock %}
 
 {% block content %}
+<!-- Print and PDF Download Buttons -->
+<div class="action-buttons" style="max-width: 800px; margin: 0 auto 20px; display: flex; gap: 10px; justify-content: flex-end;">
+    <button id="printBtn" onclick="printInvoice()" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px;">
+        🖨️ Print Invoice
+    </button>
+    <a href="{% url 'home:invoice_list' %}" class="btn back-btn">Back to List</a>
+</div>
+
 <div class="receipt cash-invoice" id="invoice-detail" style="max-width: 800px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); background-color: white;">
     <div class="receipt-top">
         <header style="display: flex; justify-content: center; align-items: center; margin-bottom: 25px; padding-top: 15px;">
@@ -98,4 +106,55 @@
         </div>
     </div>
 </div>
+
+<!-- Include jsPDF library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+// Print functionality
+function printInvoice() {
+    // Hide the action buttons during printing
+    const actionButtons = document.querySelector('.action-buttons');
+    actionButtons.style.display = 'none';
+    
+    // Print the page
+    window.print();
+    
+    // Show the buttons back after printing
+    setTimeout(() => {
+        actionButtons.style.display = 'flex';
+    }, 1000);
+}
+
+
+
+// Add print styles
+const printStyles = `
+<style>
+@media print {
+    .action-buttons {
+        display: none !important;
+    }
+    
+    body * {
+        visibility: hidden;
+    }
+    
+    #invoice-detail, #invoice-detail * {
+        visibility: visible;
+    }
+    
+    #invoice-detail {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        box-shadow: none;
+        border: none;
+    }
+}
+</style>`;
+
+document.head.insertAdjacentHTML('beforeend', printStyles);
+</script>
 {% endblock %}
