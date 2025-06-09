@@ -2,12 +2,65 @@
 <html lang="en">
 {% load static %}
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LuckyTech Receipt Generator</title>
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
+    <style>
+        /* Custom styles to integrate authentication with your existing design */
+        .auth-nav {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .auth-nav .nav-link {
+            color: #333;
+            text-decoration: none;
+            margin-left: 15px;
+            font-size: 14px;
+        }
+        
+        .auth-nav .nav-link:hover {
+            text-decoration: underline;
+        }
+        
+        .auth-nav .welcome-text {
+            color: #666;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 13px;
+            transition: background-color 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background-color: #c82333;
+            color: white;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
+     <!-- Authentication Navigation (only show if user is authenticated) -->
+    {% if user.is_authenticated %}
+    <div class="auth-nav">
+        <span class="welcome-text">Welcome, {{ user.username }}</span>
+        <form method="post" action="{% url 'accounts:logout' %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn" style="border: none; cursor: pointer;">Logout</button>
+        </form>
+    </div>
+    {% endif %}
     <div class="landing-content">
         <div class="welcome-section">
             <img src="{% static 'images/logo.jpg' %}" alt="LuckyTech Logo" class="logo">
