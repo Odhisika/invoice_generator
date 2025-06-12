@@ -1,7 +1,6 @@
 {% extends 'home/base.html' %}
 {% load static %}
 
-
 {% block title %}Cash Sales/Invoice - LuckyTech{% endblock %}
 
 {% block content %}
@@ -70,8 +69,48 @@
                 <button type="button" class="btn add-product-btn" id="add-product">+ Add Product</button>
             </div>
             
+            <!-- VAT Section -->
+            <div class="vat-section" style="margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;">
+                <h4>VAT Configuration</h4>
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="apply_vat">Apply VAT:</label>
+                        <input type="checkbox" id="apply_vat" name="apply_vat" onchange="toggleVAT()">
+                    </div>
+                    <div class="form-group half">
+                        <label for="vat_percentage">VAT Percentage (%):</label>
+                        <select id="vat_percentage" name="vat_percentage" disabled>
+                            <option value="0">Select VAT %</option>
+                            <option value="4">4%</option>
+                            <option value="5">5%</option>
+                            <option value="6">6%</option>
+                            <option value="7">7%</option>
+                            <option value="8">8%</option>
+                            <option value="9">9%</option>
+                            <option value="10">10%</option>
+                            <option value="11">11%</option>
+                            <option value="12">12%</option>
+                            <option value="13">13%</option>
+                            <option value="14">14%</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
             <div class="total-section">
                 <div class="total-row">
+                    <div class="total-label">Subtotal GH₵:</div>
+                    <div class="total-value">
+                        <input type="number" id="subtotal_amount" name="subtotal_amount" step="0.01" readonly>
+                    </div>
+                </div>
+                <div class="total-row" id="vat-display" style="display: none;">
+                    <div class="total-label">VAT Amount GH₵:</div>
+                    <div class="total-value">
+                        <input type="number" id="vat_amount" name="vat_amount" step="0.01" readonly>
+                    </div>
+                </div>
+                <div class="total-row" style="border-top: 2px solid #333; padding-top: 10px; margin-top: 10px; font-weight: bold;">
                     <div class="total-label">Total GH₵:</div>
                     <div class="total-value">
                         <input type="number" id="total_amount" name="total_amount" step="0.01" readonly>
@@ -103,7 +142,6 @@
         <div class="receipt-header">
             <h3>Invoice Preview</h3>
             <button class="btn print-btn" onclick="window.print();">Print Invoice</button>
-            <!-- <button class="btn download-btn" onclick="downloadPDF()">Download Invoice</button>  -->
         </div>
         
         <div class="receipt cash-invoice" id="printable-receipt" style="max-width: 800px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); background-color: white;">
@@ -122,15 +160,15 @@
                 <div class="receipt-company-info" style="margin-top: 30px; border-top: 1px solid #eaeaea; padding-top: 15px;">
                     <p style="text-align: center; margin-bottom: 15px;">Dealers; Computers, Laptops, Accessories, Repairs. IT support for offices and Homes, Networking, Apps, Websites, Animations, Robotics, Data Recovery & engaging in Tech innovative products.</p>
                     <div class="receipt-contact" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
-                        <span>📞 0591884422</span>
-                        <span>📱 0209522722</span>
-                        <span>📷 Lig_ig</span>
-                        <span>🐦 @Lig_ig</span>
-                        <span>👍 Lig Ig</span>
+                    <span>📞 0591884422</span>
+                    <span>📱 0209522722</span>
+                    <span> All social Handles :</span>
+                    <span>𝕏|🅾|ⓕ|𝗧𝗶𝗸 𝗧𝗼𝗸</span>
+                    <span>Lig4gh</span>
                     </div>
                     <div class="receipt-contact" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-                        <span>Email: liground21@gmail.com</span>
-                        <span>Website: www.liground.com</span>
+                        <span>Email: info@lig.com.gh</span>
+                        <span>Website: www.lig..com.gh</span>
                         <span>Loc: Adjacent Apex Bank-Koforidua</span>
                     </div>
                 </div>
@@ -179,23 +217,35 @@
                 </div>
             </div>
             
-            <div class="invoice-total-section" style="display: flex; justify-content: flex-end; margin: 20px 0; padding: 10px; background-color: #f8f8f8; border-radius: 4px; border: 1px solid #e0e0e0;">
-                <div class="invoice-total-label" style="font-weight: bold; margin-right: 15px; font-size: 18px;">Total GH₵:</div>
-                <div class="invoice-total-value" style="font-weight: bold; font-size: 18px;">{{ invoice_data.total_amount }}</div>
+            <div class="invoice-total-section" style="margin: 20px 0;">
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 10px; padding: 8px; background-color: #f8f8f8; border-radius: 4px;">
+                    <div class="invoice-subtotal-label" style="font-weight: bold; margin-right: 15px; font-size: 16px;">Subtotal GH₵:</div>
+                    <div class="invoice-subtotal-value" style="font-weight: bold; font-size: 16px;">{{ invoice_data.subtotal_amount }}</div>
+                </div>
+                
+                {% if invoice_data.vat_applicable %}
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 10px; padding: 8px; background-color: #f0f8ff; border-radius: 4px;">
+                    <div class="invoice-vat-label" style="font-weight: bold; margin-right: 15px; font-size: 16px;">VAT ({{ invoice_data.vat_percentage }}%) GH₵:</div>
+                    <div class="invoice-vat-value" style="font-weight: bold; font-size: 16px;">{{ invoice_data.vat_amount }}</div>
+                </div>
+                {% endif %}
+                
+                <div style="display: flex; justify-content: flex-end; padding: 10px; background-color: #e8f5e8; border-radius: 4px; border: 2px solid #4CAF50;">
+                    <div class="invoice-total-label" style="font-weight: bold; margin-right: 15px; font-size: 18px;">Total GH₵:</div>
+                    <div class="invoice-total-value" style="font-weight: bold; font-size: 18px; color: #2E7D32;">{{ invoice_data.total_amount }}</div>
+                </div>
             </div>
             
             <div class="invoice-signature-section" style="display: flex; justify-content: space-between; margin-top: 30px; padding-top: 20px;">
                 <div class="signature-field" style="width: 45%;">
                     <span class="field-label" style="font-weight: bold; display: block; margin-bottom: 5px;">Customer Signature:</span>
                     <span class="field-value">{{ invoice_data.customer_sign }}</span>
-                    <!-- Added signature line -->
                     <div class="signature-line" style="border-top: 1px solid #000; width: 100%; margin-top: 25px;"></div>
                 </div>
                 
                 <div class="signature-field" style="width: 45%;">
                     <span class="field-label" style="font-weight: bold; display: block; margin-bottom: 5px;">Manager's Signature:</span>
                     <span class="field-value">{{ invoice_data.manager_sign }}</span>
-                    <!-- Added signature line -->
                     <div class="signature-line" style="border-top: 1px solid #000; width: 100%; margin-top: 25px;"></div>
                 </div>
             </div>
@@ -203,10 +253,150 @@
     </div>
     {% endif %}
 </div>
-{% endblock %}
-
 
 <script>
+    let productRowCount = 1;
+
+    // Toggle VAT functionality
+    function toggleVAT() {
+        const applyVAT = document.getElementById('apply_vat').checked;
+        const vatPercentage = document.getElementById('vat_percentage');
+        const vatDisplay = document.getElementById('vat-display');
+        
+        vatPercentage.disabled = !applyVAT;
+        
+        if (applyVAT) {
+            vatDisplay.style.display = 'flex';
+            vatPercentage.value = '12.5'; // Default to common VAT rate
+        } else {
+            vatDisplay.style.display = 'none';
+            vatPercentage.value = '0';
+        }
+        
+        calculateTotals();
+    }
+
+    // Calculate product totals and overall totals
+    function calculateTotals() {
+        let subtotal = 0;
+        
+        // Calculate subtotal from all products
+        document.querySelectorAll('.product-row').forEach(row => {
+            const qtyInput = row.querySelector('input[name*="qty"]');
+            const priceInput = row.querySelector('input[name*="price"]');
+            const totalInput = row.querySelector('input[name*="total"]');
+            
+            if (qtyInput && priceInput && totalInput) {
+                const qty = parseFloat(qtyInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const total = qty * price;
+                
+                totalInput.value = total.toFixed(2);
+                subtotal += total;
+            }
+        });
+        
+        // Update subtotal
+        document.getElementById('subtotal_amount').value = subtotal.toFixed(2);
+        
+        // Calculate VAT if applicable
+        const applyVAT = document.getElementById('apply_vat').checked;
+        const vatPercentage = parseFloat(document.getElementById('vat_percentage').value) || 0;
+        
+        let vatAmount = 0;
+        let finalTotal = subtotal;
+        
+        if (applyVAT && vatPercentage > 0) {
+            vatAmount = (subtotal * vatPercentage) / 100;
+            finalTotal = subtotal + vatAmount;
+        }
+        
+        document.getElementById('vat_amount').value = vatAmount.toFixed(2);
+        document.getElementById('total_amount').value = finalTotal.toFixed(2);
+    }
+
+    // Add product row functionality
+    document.getElementById('add-product').addEventListener('click', function() {
+        productRowCount++;
+        const productRows = document.getElementById('product-rows');
+        
+        const newRow = document.createElement('div');
+        newRow.className = 'product-row';
+        newRow.setAttribute('data-row', productRowCount);
+        
+        newRow.innerHTML = `
+            <div class="col-num">${productRowCount}</div>
+            <div class="col-desc">
+                <input type="text" name="product_desc_${productRowCount}" required>
+            </div>
+            <div class="col-qty">
+                <input type="number" name="product_qty_${productRowCount}" value="1" min="1" required>
+            </div>
+            <div class="col-price">
+                <input type="number" name="product_price_${productRowCount}" step="0.01" required>
+            </div>
+            <div class="col-total">
+                <input type="number" name="product_total_${productRowCount}" step="0.01" readonly>
+            </div>
+            <div class="col-action">
+                <button type="button" class="btn remove-btn">×</button>
+            </div>
+        `;
+        
+        productRows.appendChild(newRow);
+        updateRemoveButtons();
+        attachProductEventListeners(newRow);
+    });
+
+    // Remove product row functionality
+    function updateRemoveButtons() {
+        const removeButtons = document.querySelectorAll('.remove-btn');
+        removeButtons.forEach(btn => {
+            btn.disabled = removeButtons.length <= 1;
+            btn.onclick = function() {
+                if (removeButtons.length > 1) {
+                    btn.closest('.product-row').remove();
+                    updateRowNumbers();
+                    updateRemoveButtons();
+                    calculateTotals();
+                }
+            };
+        });
+    }
+
+    // Update row numbers after removal
+    function updateRowNumbers() {
+        document.querySelectorAll('.product-row').forEach((row, index) => {
+            const rowNum = index + 1;
+            row.querySelector('.col-num').textContent = rowNum;
+            row.setAttribute('data-row', rowNum);
+        });
+        productRowCount = document.querySelectorAll('.product-row').length;
+    }
+
+    // Attach event listeners to product inputs
+    function attachProductEventListeners(row) {
+        const qtyInput = row.querySelector('input[name*="qty"]');
+        const priceInput = row.querySelector('input[name*="price"]');
+        
+        [qtyInput, priceInput].forEach(input => {
+            input.addEventListener('input', calculateTotals);
+        });
+    }
+
+    // Initialize event listeners on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Attach listeners to existing product rows
+        document.querySelectorAll('.product-row').forEach(attachProductEventListeners);
+        
+        // VAT percentage change listener
+        document.getElementById('vat_percentage').addEventListener('change', calculateTotals);
+        
+        // Initial calculation
+        calculateTotals();
+        updateRemoveButtons();
+    });
+
     function downloadPDF() {
         const element = document.getElementById('printable-receipt');
         const opt = {
@@ -219,3 +409,4 @@
         html2pdf().set(opt).from(element).save();
     }
 </script>
+{% endblock %}

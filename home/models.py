@@ -50,6 +50,10 @@ class OfficialReceipt(models.Model):
     def formatted_amount(self):
         return f"GH₵ {self.amount:,.2f}"
 
+from django.db import models
+from django.utils import timezone
+from decimal import Decimal
+
 class CashInvoice(models.Model):
     # Invoice identification
     invoice_number = models.CharField(max_length=20, unique=True, editable=False)
@@ -60,8 +64,30 @@ class CashInvoice(models.Model):
     customer_address = models.CharField(max_length=255, blank=True, null=True)
     date = models.DateField()
     
-    # Invoice totals
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    # VAT and amount fields
+    subtotal_amount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=Decimal('0.00'),
+        help_text="Amount before VAT"
+    )
+    vat_applicable = models.BooleanField(
+        default=False,
+        help_text="Whether VAT is applied to this invoice"
+    )
+    vat_percentage = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2, 
+        default=Decimal('0.00'),
+        help_text="VAT percentage (e.g., 15.00 for 15%)"
+    )
+    vat_amount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=Decimal('0.00'),
+        help_text="Calculated VAT amount"
+    )
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     
     # Signatures
     customer_sign = models.CharField(max_length=100, blank=True, null=True)
@@ -69,7 +95,7 @@ class CashInvoice(models.Model):
     
     # Additional tracking fields
     created_by = models.CharField(max_length=100, default='System')
-    notes = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)  # This field was missing!
     
     class Meta:
         ordering = ['-date_created']
@@ -77,8 +103,8 @@ class CashInvoice(models.Model):
         verbose_name_plural = 'Cash Invoices'
     
     def save(self, *args, **kwargs):
+        # Generate invoice number if not set
         if not self.invoice_number:
-            # Generate invoice number (format: CI-YYYYMMDD-XXX)
             today = timezone.now().date()
             date_str = today.strftime('%Y%m%d')
             
@@ -88,6 +114,14 @@ class CashInvoice(models.Model):
             ).count() + 1
             
             self.invoice_number = f"CI-{date_str}-{count:03d}"
+        
+        # Auto-calculate VAT if applicable
+        if self.vat_applicable and self.vat_percentage > 0 and self.subtotal_amount > 0:
+            self.vat_amount = (self.subtotal_amount * self.vat_percentage) / Decimal('100')
+            self.total_amount = self.subtotal_amount + self.vat_amount
+        elif not self.vat_applicable:
+            self.vat_amount = Decimal('0.00')
+            self.total_amount = self.subtotal_amount if self.subtotal_amount else self.total_amount
         
         super().save(*args, **kwargs)
     
