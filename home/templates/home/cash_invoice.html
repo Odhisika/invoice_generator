@@ -6,6 +6,169 @@
 {% block content %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+<style>
+    @media print {
+        @page {
+            margin: 0;
+            size: auto;
+        }
+
+        body {
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 12px !important;
+            line-height: 1.3 !important;
+        }
+
+        /* Hide all browser headers and footers */
+        body::before,
+        body::after {
+            display: none !important;
+        }
+
+        * {
+            -webkit-print-color-adjust: exact !important;
+            color-adjust: exact !important;
+        }
+
+        /* Hide everything except the receipt */
+        .form-container > *:not(.receipt-preview) {
+            display: none !important;
+        }
+
+        .form-container {
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: none !important;
+        }
+
+        .receipt-preview {
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: none !important;
+            min-height: auto !important;
+        }
+
+        .receipt-header {
+            display: none !important;
+        }
+
+        .cash-invoice {
+            box-shadow: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            padding: 15px !important;
+            max-width: none !important;
+        }
+
+        .receipt-top header {
+            margin-bottom: 20px !important;
+            padding-top: 10px !important;
+        }
+
+        .logo {
+            gap: 12px !important;
+        }
+
+        .logo-image {
+            width: 60px !important;
+        }
+
+        .logo-full {
+            font-size: 16px !important;
+            line-height: 1.2 !important;
+        }
+
+        .receipt-company-info {
+            margin-top: 20px !important;
+            padding-top: 12px !important;
+        }
+
+        .receipt-company-info p {
+            font-size: 11px !important;
+            margin-bottom: 10px !important;
+        }
+
+        .receipt-contact {
+            font-size: 10px !important;
+            gap: 8px !important;
+            margin-bottom: 8px !important;
+        }
+
+        .receipt-title-section {
+            padding: 8px !important;
+            margin: 15px 0 !important;
+        }
+
+        .invoice-title {
+            font-size: 18px !important;
+        }
+
+        .invoice-number {
+            font-size: 14px !important;
+        }
+
+        .invoice-customer-info {
+            margin-bottom: 12px !important;
+            font-size: 12px !important;
+        }
+
+        .address-field {
+            margin-bottom: 15px !important;
+            font-size: 12px !important;
+        }
+
+        .invoice-table {
+            margin-bottom: 20px !important;
+        }
+
+        .invoice-table-header {
+            padding: 8px 5px !important;
+            font-size: 11px !important;
+        }
+
+        .invoice-table-row {
+            padding: 6px 5px !important;
+            font-size: 11px !important;
+        }
+
+        .invoice-total-section {
+            margin: 15px 0 !important;
+        }
+
+        .invoice-total-section > div {
+            padding: 6px !important;
+            margin-bottom: 8px !important;
+        }
+
+        .invoice-subtotal-label,
+        .invoice-subtotal-value,
+        .invoice-vat-label,
+        .invoice-vat-value {
+            font-size: 12px !important;
+        }
+
+        .invoice-total-label,
+        .invoice-total-value {
+            font-size: 14px !important;
+        }
+
+        .invoice-signature-section {
+            margin-top: 20px !important;
+            padding-top: 15px !important;
+            font-size: 12px !important;
+        }
+
+        .signature-line {
+            margin-top: 20px !important;
+        }
+    }
+</style>
+
 <div class="form-container">
     <div class="form-header">
         <h2>Generate Cash Sales/Invoice</h2>
@@ -141,7 +304,10 @@
     <div class="receipt-preview">
         <div class="receipt-header">
             <h3>Invoice Preview</h3>
-            <button class="btn print-btn" onclick="window.print();">Print Invoice</button>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn print-btn" onclick="window.print();">Print Invoice</button>
+                <button class="btn" onclick="downloadPDF()">Download PDF</button>
+            </div>
         </div>
         
         <div class="receipt cash-invoice" id="printable-receipt" style="max-width: 800px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); background-color: white;">
@@ -158,7 +324,7 @@
                 </header>
                 
                 <div class="receipt-company-info" style="margin-top: 30px; border-top: 1px solid #eaeaea; padding-top: 15px;">
-                    <p style="text-align: center; margin-bottom: 15px;">Dealers; Computers, Laptops, Accessories, Repairs. IT support for offices and Homes, Networking, Apps, Websites, Animations, Robotics, Data Recovery & engaging in Tech innovative products.</p>
+                    <p style="text-align: center; margin-bottom: 15px;">Dealers; Computers, Laptops, Accessories, Research, Repairs. IT support for offices and Homes, Networking, Apps, Websites, Animations, Robotics, Data Recovery & engaging in Tech innovative products.</p>
                     <div class="receipt-contact" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
                     <span>📞 0591884422</span>
                     <span>📱 0209522722</span>
@@ -168,7 +334,7 @@
                     </div>
                     <div class="receipt-contact" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
                         <span>Email: info@lig.com.gh</span>
-                        <span>Website: www.lig..com.gh</span>
+                        <span>Website: www.lig.com.gh</span>
                         <span>Loc: Adjacent Apex Bank-Koforidua</span>
                     </div>
                 </div>
