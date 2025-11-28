@@ -87,6 +87,12 @@ class CashInvoice(models.Model):
         default=Decimal('0.00'),
         help_text="Calculated VAT amount"
     )
+    nontax_total = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=Decimal('0.00'),
+        help_text="Total of non-taxable items"
+    )
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     
     # Signatures
@@ -122,6 +128,10 @@ class CashInvoice(models.Model):
         elif not self.vat_applicable:
             self.vat_amount = Decimal('0.00')
             self.total_amount = self.subtotal_amount if self.subtotal_amount else self.total_amount
+            
+        # Add non-tax total to final amount
+        if self.nontax_total:
+            self.total_amount += self.nontax_total
         
         super().save(*args, **kwargs)
     
@@ -138,6 +148,7 @@ class InvoiceProduct(models.Model):
     quantity = models.IntegerField(default=1)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     total = models.DecimalField(max_digits=10, decimal_places=2)
+    is_taxable = models.BooleanField(default=True, help_text="True for regular products, False for non-tax items like transport")
     
     class Meta:
         ordering = ['id']

@@ -1,168 +1,499 @@
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
-<head>
 
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LuckyTech Receipt Generator</title>
-    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
-        /* Custom styles to integrate authentication with your existing design */
+        :root {
+            --primary-gold: #FFD700;
+            --secondary-gold: #DAA520;
+            --accent-yellow: #FFFACD;
+            --text-dark: #333333;
+            --text-light: #666666;
+            --white: #ffffff;
+            --bg-light: #f8f9fa;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--white);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Authentication Navigation */
         .auth-nav {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            z-index: 1000;
+            background-color: var(--white);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        
-        .auth-nav .nav-link {
-            color: #333;
+
+        .welcome-text {
+            color: var(--text-dark);
+            font-weight: 500;
+            margin-right: 1.5rem;
+        }
+
+        .logout-btn {
+            background-color: var(--white);
+            color: #dc3545;
+            border: 1px solid #dc3545;
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+            background-color: #dc3545;
+            color: var(--white);
+        }
+
+        /* Main Content */
+        .landing-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--white) 0%, var(--accent-yellow) 100%);
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(218, 165, 32, 0.2);
+        }
+
+        .logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 1rem;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(218, 165, 32, 0.3);
+            border: 3px solid var(--primary-gold);
+        }
+
+        .welcome-section h1 {
+            color: var(--text-dark);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .welcome-section h2 {
+            color: var(--secondary-gold);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .welcome-section p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Stats Dashboard */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border-top: 4px solid var(--primary-gold);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--secondary-gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        /* Action Grid */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .action-card {
+            background: var(--white);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
             text-decoration: none;
-            margin-left: 15px;
-            font-size: 14px;
+            color: var(--text-dark);
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
-        
-        .auth-nav .nav-link:hover {
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-gold);
+        }
+
+        .card-header {
+            background-color: var(--primary-gold);
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .card-header h3 {
+            color: var(--text-dark);
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 2rem;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-body p {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        /* Recent Activity */
+        .recent-activity {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 3rem;
+        }
+
+        .recent-activity h2 {
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-gold);
+            display: inline-block;
+        }
+
+        .recent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .recent-column h3 {
+            color: var(--secondary-gold);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            transition: var(--transition);
+        }
+
+        .activity-item:hover {
+            background-color: var(--accent-yellow);
+            padding-left: 1.5rem;
+        }
+
+        .activity-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .activity-number {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .activity-detail {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .activity-date {
+            font-size: 0.8rem;
+            color: #999;
+            background: #f1f1f1;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+        }
+
+        .view-all {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--secondary-gold);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .view-all:hover {
+            color: var(--text-dark);
+            transform: translateX(5px);
+        }
+
+        /* Footer */
+        .company-info {
+            text-align: center;
+            padding: 2rem;
+            background: var(--text-dark);
+            color: var(--white);
+            margin-top: auto;
+        }
+
+        .company-info h2 {
+            color: var(--primary-gold);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .company-info p {
+            color: #ccc;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .company-info a {
+            color: var(--primary-gold);
+            text-decoration: none;
+        }
+
+        .company-info a:hover {
             text-decoration: underline;
         }
-        
-        .auth-nav .welcome-text {
-            color: #666;
-            font-size: 14px;
-            margin-right: 10px;
-        }
-        
-        .logout-btn {
-            background-color: #dc3545;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 13px;
-            transition: background-color 0.3s;
-        }
-        
-        .logout-btn:hover {
-            background-color: #c82333;
-            color: white;
-            text-decoration: none;
+
+        @media (max-width: 768px) {
+            .landing-content {
+                padding: 1rem;
+            }
+
+            .welcome-section h1 {
+                font-size: 1.5rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .recent-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
-     <!-- Authentication Navigation (only show if user is authenticated) -->
+    <!-- Authentication Navigation -->
     {% if user.is_authenticated %}
     <div class="auth-nav">
         <span class="welcome-text">Welcome, {{ user.username }}</span>
         <form method="post" action="{% url 'accounts:logout' %}" style="display: inline;">
             {% csrf_token %}
-            <button type="submit" class="logout-btn" style="border: none; cursor: pointer;">Logout</button>
+            <button type="submit" class="logout-btn">Logout</button>
         </form>
     </div>
     {% endif %}
+
     <div class="landing-content">
+        <!-- Welcome Section -->
         <div class="welcome-section">
             <img src="{% static 'images/logo.jpg' %}" alt="LuckyTech Logo" class="logo">
             <h1>Welcome to LuckyTech Innovation Ground</h1>
-            <h1>Receipt Generator System</h1>
-            <p>Generate official receipts and cash invoices for your business transactions</p>
+            <h2>Receipt Generator System</h2>
+            <p>Streamline your business transactions with our professional receipt and invoice generation tools.</p>
         </div>
-        
+
         <!-- Statistics Dashboard -->
         <div class="dashboard-stats">
             <div class="stat-card">
                 <div class="stat-number">{{ total_receipts }}</div>
-                <div class="stat-label">Total Receipts</div>
+                <div class="stat-label">Total Receipts Generated</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">{{ total_invoices }}</div>
-                <div class="stat-label">Total Invoices</div>
+                <div class="stat-label">Total Invoices Generated</div>
             </div>
         </div>
-        
-        <div class="receipt-options">
-            <a href="{% url 'home:official_receipt' %}" class="btn receipt-btn">
-                <div class="btn-content">
+
+        <!-- Main Actions -->
+        <div class="action-grid">
+            <!-- Official Receipt -->
+            <a href="{% url 'home:official_receipt' %}" class="action-card">
+                <div class="card-header">
                     <h3>Official Receipt</h3>
-                    <p>Generate a receipt for payments received</p>
+                </div>
+                <div class="card-body">
+                    <span class="btn-icon">🧾</span>
+                    <p>Generate a new official receipt for payments received.</p>
+                    <span class="view-all">Create Receipt →</span>
                 </div>
             </a>
-            <a href="{% url 'home:cash_invoice' %}" class="btn invoice-btn">
-                <div class="btn-content">
+
+            <!-- Cash Invoice -->
+            <a href="{% url 'home:cash_invoice' %}" class="action-card">
+                <div class="card-header">
                     <h3>Cash Sales/Invoice</h3>
-                    <p>Generate an invoice for products sold</p>
+                </div>
+                <div class="card-body">
+                    <span class="btn-icon">💰</span>
+                    <p>Generate a new cash invoice for products sold.</p>
+                    <span class="view-all">Create Invoice →</span>
+                </div>
+            </a>
+
+            <!-- Manage Receipts -->
+            <a href="{% url 'home:receipt_list' %}" class="action-card">
+                <div class="card-header">
+                    <h3>Manage Receipts</h3>
+                </div>
+                <div class="card-body">
+                    <span class="btn-icon">📋</span>
+                    <p>View, search, and manage all generated receipts.</p>
+                    <span class="view-all">View All →</span>
+                </div>
+            </a>
+
+            <!-- Manage Invoices -->
+            <a href="{% url 'home:invoice_list' %}" class="action-card">
+                <div class="card-header">
+                    <h3>Manage Invoices</h3>
+                </div>
+                <div class="card-body">
+                    <span class="btn-icon">📊</span>
+                    <p>View, search, and manage all generated invoices.</p>
+                    <span class="view-all">View All →</span>
                 </div>
             </a>
         </div>
-        
-        <!-- Management Options -->
-        <div class="management-options">
-            <a href="{% url 'home:receipt_list' %}" class="btn management-btn">
-                <div class="btn-content">
-                    <h3>📋 View All Receipts</h3>
-                    <p>Browse and manage official receipts</p>
-                </div>
-            </a>
-            <a href="{% url 'home:invoice_list' %}" class="btn management-btn">
-                <div class="btn-content">
-                    <h3>📊 View All Invoices</h3>
-                    <p>Browse and manage cash invoices</p>
-                </div>
-            </a>
-        </div>
-        
+
         <!-- Recent Activity -->
         {% if recent_receipts or recent_invoices %}
         <div class="recent-activity">
             <h2>Recent Activity</h2>
-            
-            <div class="recent-sections">
+
+            <div class="recent-grid">
                 {% if recent_receipts %}
-                <div class="recent-section">
-                    <h3>Recent Receipts</h3>
-                    <div class="recent-list">
+                <div class="recent-column">
+                    <h3>Latest Receipts</h3>
+                    <div class="activity-list">
                         {% for receipt in recent_receipts %}
-                        <div class="recent-item">
-                            <div class="item-info">
-                                <span class="item-number">{{ receipt.receipt_number }}</span>
-                                <span class="item-detail">{{ receipt.received_from }} - {{ receipt.formatted_amount }}</span>
+                        <div class="activity-item">
+                            <div class="activity-info">
+                                <span class="activity-number">#{{ receipt.receipt_number }}</span>
+                                <span class="activity-detail">
+                                    {{ receipt.received_from }} - {{ receipt.formatted_amount}}</span>
                             </div>
-                            <div class="item-date">{{ receipt.date_created|date:"M d" }}</div>
+                            <div class="activity-date">{{ receipt.date_created|date:"M d" }}</div>
                         </div>
                         {% endfor %}
                     </div>
-                    <a href="{% url 'home:receipt_list' %}" class="view-all-link">View all receipts →</a>
                 </div>
                 {% endif %}
-                
+
                 {% if recent_invoices %}
-                <div class="recent-section">
-                    <h3>Recent Invoices</h3>
-                    <div class="recent-list">
+                <div class="recent-column">
+                    <h3>Latest Invoices</h3>
+                    <div class="activity-list">
                         {% for invoice in recent_invoices %}
-                        <div class="recent-item">
-                            <div class="item-info">
-                                <span class="item-number">{{ invoice.invoice_number }}</span>
-                                <span class="item-detail">{{ invoice.customer_name }} - {{ invoice.formatted_total }}</span>
+                        <div class="activity-item">
+                            <div class="activity-info">
+                                <span class="activity-number">#{{ invoice.invoice_number }}</span>
+                                <span class="activity-detail">
+                                    {{ invoice.customer_name }} - {{ invoice.formatted_total }}</span>
                             </div>
-                            <div class="item-date">{{ invoice.date_created|date:"M d" }}</div>
+                            <div class="activity-date">{{ invoice.date_created|date:"M d" }}</div>
                         </div>
                         {% endfor %}
                     </div>
-                    <a href="{% url 'home:invoice_list' %}" class="view-all-link">View all invoices →</a>
                 </div>
                 {% endif %}
             </div>
         </div>
         {% endif %}
-        
-        <div class="company-info">
-            <h2>About LuckyTech Innovation Ground</h2>
-            <p>Dealers; Computers, Laptops, Accessories, Repairs. IT support for offices and Homes, Networking, Apps, Websites, Animations, Robotics, Data Recovery & engaging in Tech innovative products.</p>
-            <p>Location: Adjacent Apex Bank-Koforidua</p>
-            <p>Website: <a href="http://www.lig.com.gh" target="_blank">www.lig.com.gh</a></p>
-        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="company-info">
+        <h2>LuckyTech Innovation Ground</h2>
+        <p>Dealers in Computers, Laptops, Accessories, Research, Repairs. IT support for Offices and Homes, Networking,
+            Apps, Websites, Animations, Robotics, Data Recovery & Tech Innovations.</p>
+        <p>📍 Location: Adjacent Apex Bank-Koforidua | 🌐 <a href="http://www.lig.com.gh"
+                target="_blank">www.lig.com.gh</a></p>
     </div>
 </body>
+
 </html>

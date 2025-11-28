@@ -84,7 +84,7 @@ def cash_invoice(request):
                     
                     subtotal_amount += product_total
             
-            # Handle VAT calculations
+            # Handle VAT calculations (ONLY on products)
             apply_vat = request.POST.get('apply_vat') == 'on'
             vat_percentage = Decimal('0.00')
             vat_amount = Decimal('0.00')
@@ -104,10 +104,53 @@ def cash_invoice(request):
                     messages.error(request, 'Invalid VAT percentage value.')
                     return render(request, 'home/cash_invoice.html', {'form': form})
             
+            
+            # Process non-tax items (transport/delivery) - NOT affected by VAT
+            nontax_data = []
+            nontax_total = Decimal('0.00')
+            
+            nontax_pattern = re.compile(r'nontax_desc_(\d+)')
+            nontax_rows = set()
+            
+            # Find all non-tax rows
+            for key in request.POST:
+                match = nontax_pattern.match(key)
+                if match:
+                    nontax_rows.add(match.group(1))
+            
+            # Process each non-tax row
+            for row_num in sorted(nontax_rows):
+                desc_key = f'nontax_desc_{row_num}'
+                qty_key = f'nontax_qty_{row_num}'
+                price_key = f'nontax_price_{row_num}'
+                
+                # Only process if all fields are present and description is not empty
+                if all(key in request.POST for key in [desc_key, qty_key, price_key]):
+                    desc = request.POST[desc_key].strip()
+                    if desc:  # Only add if description is not empty
+                        try:
+                            qty = int(request.POST[qty_key])
+                            price = Decimal(request.POST[price_key])
+                            nontax_item_total = qty * price
+                            
+                            nontax_data.append({
+                                'desc': desc,
+                                'qty': qty,
+                                'price': price,
+                                'total': nontax_item_total
+                            })
+                            
+                            nontax_total += nontax_item_total
+                        except (ValueError, TypeError):
+                            pass  # Skip invalid entries
+            
+            # Add non-tax total to final amount (after VAT, not affected by VAT)
+            total_amount += nontax_total
+            
             # Set all the calculated amounts and VAT data
             invoice.total_amount = total_amount
             
-            # Save VAT fields to the database (UNCOMMENTED AND ACTIVE)
+            # Save VAT fields to the database
             if hasattr(invoice, 'vat_applicable'):
                 invoice.vat_applicable = apply_vat
             if hasattr(invoice, 'vat_percentage'):
@@ -116,18 +159,33 @@ def cash_invoice(request):
                 invoice.vat_amount = vat_amount
             if hasattr(invoice, 'subtotal_amount'):
                 invoice.subtotal_amount = subtotal_amount
+            if hasattr(invoice, 'nontax_total'):
+                invoice.nontax_total = nontax_total
             
             # Save the invoice with all data
             invoice.save()
             
             # Create invoice products
+            # Create invoice products (Taxable)
             for product_data in products_data:
                 InvoiceProduct.objects.create(
                     invoice=invoice,
                     product_description=product_data['desc'],
                     quantity=product_data['qty'],
                     unit_price=product_data['price'],
-                    total=product_data['total']
+                    total=product_data['total'],
+                    is_taxable=True
+                )
+            
+            # Create invoice products (Non-Taxable)
+            for nontax_item in nontax_data:
+                InvoiceProduct.objects.create(
+                    invoice=invoice,
+                    product_description=nontax_item['desc'],
+                    quantity=nontax_item['qty'],
+                    unit_price=nontax_item['price'],
+                    total=nontax_item['total'],
+                    is_taxable=False
                 )
             
             # Prepare data for template display
@@ -140,6 +198,8 @@ def cash_invoice(request):
                 'vat_applicable': apply_vat,
                 'vat_percentage': round(vat_percentage, 2),
                 'vat_amount': round(vat_amount, 2),
+                'nontax_items': nontax_data,
+                'nontax_total': round(nontax_total, 2),
                 'total_amount': round(total_amount, 2),
                 'customer_sign': invoice.customer_sign,
                 'manager_sign': invoice.manager_sign,
@@ -149,6 +209,8 @@ def cash_invoice(request):
             success_message = f'Cash Invoice {invoice.invoice_number} has been generated successfully!'
             if apply_vat:
                 success_message += f' (VAT {vat_percentage}% included: GH₵{vat_amount:.2f})'
+            if nontax_total > 0:
+                success_message += f' + Non-Tax Items: GH₵{nontax_total:.2f}'
             
             messages.success(request, success_message)
             return render(request, 'home/cash_invoice.html', {
@@ -223,58 +285,64 @@ from django.contrib import messages
 
 def invoice_detail(request, invoice_id):
     try:
-        # Use get_object_or_404 for better error handling
         invoice = get_object_or_404(CashInvoice, id=invoice_id)
+        all_products = InvoiceProduct.objects.filter(invoice=invoice)
         
-        # Get all products for this invoice
-        products = InvoiceProduct.objects.filter(invoice=invoice)
+        products_data = [] # Taxable products
+        nontax_data = []   # Non-tax products
         
-        # Prepare products data - exactly like cash_invoice view
-        products_data = []
         subtotal_amount = Decimal('0.00')
+        nontax_total = Decimal('0.00')
         
-        for product in products:
-            product_total = product.total
-            subtotal_amount += product_total
+        for product in all_products:
+            # Check if product is taxable (default to True if field doesn't exist yet)
+            is_taxable = getattr(product, 'is_taxable', True)
             
-            products_data.append({
+            item_data = {
                 'desc': product.product_description,
                 'qty': product.quantity,
                 'price': product.unit_price,
                 'total': product.total
-            })
+            }
+            
+            if is_taxable:
+                products_data.append(item_data)
+                subtotal_amount += product.total
+            else:
+                nontax_data.append(item_data)
+                nontax_total += product.total
         
-        # Handle VAT calculations - Use the exact same logic as cash_invoice view
+        # Handle VAT calculations
         vat_applicable = getattr(invoice, 'vat_applicable', False)
         vat_percentage = getattr(invoice, 'vat_percentage', Decimal('0.00'))
         vat_amount = getattr(invoice, 'vat_amount', Decimal('0.00'))
         stored_subtotal = getattr(invoice, 'subtotal_amount', Decimal('0.00'))
+        stored_nontax_total = getattr(invoice, 'nontax_total', Decimal('0.00'))
         
         # Convert to Decimal for consistent calculations
         vat_percentage = Decimal(str(vat_percentage)) if vat_percentage else Decimal('0.00')
         vat_amount = Decimal(str(vat_amount)) if vat_amount else Decimal('0.00')
         stored_subtotal = Decimal(str(stored_subtotal)) if stored_subtotal else Decimal('0.00')
+        stored_nontax_total = Decimal(str(stored_nontax_total)) if stored_nontax_total else Decimal('0.00')
         total_amount = Decimal(str(invoice.total_amount)) if invoice.total_amount else Decimal('0.00')
         
-        # Use stored subtotal if available, otherwise use calculated subtotal
+        # Use stored values if available (preferred), otherwise use calculated
         final_subtotal = stored_subtotal if stored_subtotal > 0 else subtotal_amount
+        final_nontax_total = stored_nontax_total if stored_nontax_total > 0 else nontax_total
         
-        # Recalculate VAT and total based on stored data
+        # Recalculate VAT and total based on stored data if needed
         if vat_applicable and vat_percentage > 0:
-            # Use stored VAT amount if available, otherwise recalculate
-            if vat_amount > 0:
-                final_vat = vat_amount
-                final_total = total_amount
-            else:
-                final_vat = (final_subtotal * vat_percentage) / Decimal('100')
-                final_total = final_subtotal + final_vat
+            if vat_amount == 0:
+                vat_amount = (final_subtotal * vat_percentage) / Decimal('100')
         else:
-            final_vat = Decimal('0.00')
-            final_total = final_subtotal
+            vat_amount = Decimal('0.00')
             vat_percentage = Decimal('0.00')
             vat_applicable = False
+            
+        # Ensure total matches components
+        # calculated_total = final_subtotal + vat_amount + final_nontax_total
         
-        # Prepare invoice data for template - using EXACT same structure as cash_invoice
+        # Prepare invoice data for template
         invoice_data = {
             'invoice_number': invoice.invoice_number,
             'customer_name': invoice.customer_name,
@@ -283,8 +351,10 @@ def invoice_detail(request, invoice_id):
             'subtotal_amount': round(final_subtotal, 2),
             'vat_applicable': vat_applicable,
             'vat_percentage': round(vat_percentage, 2),
-            'vat_amount': round(final_vat, 2),
-            'total_amount': round(final_total, 2),
+            'vat_amount': round(vat_amount, 2),
+            'nontax_items': nontax_data,
+            'nontax_total': round(final_nontax_total, 2),
+            'total_amount': round(total_amount, 2),
             'customer_sign': invoice.customer_sign,
             'manager_sign': invoice.manager_sign,
             'products': products_data

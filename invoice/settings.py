@@ -86,8 +86,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'invoicedb',
-        'USER': 'invoiceuser',
-        'PASSWORD': 'invoice',
+        'USER': 'postgres',
+        'PASSWORD': 'osikani',
         'HOST': 'localhost',
         'PORT': '5432',
     }
