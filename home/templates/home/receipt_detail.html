@@ -1,554 +1,280 @@
-{% extends 'home/base.html' %}
-
+{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Receipt {{ receipt.receipt_number }} - LuckyTech{% endblock %}
+{% block title %}Receipt #{{ receipt.receipt_number }} - LuckyTech Innovation Ground{% endblock %}
 
 {% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+        <h1 class="page-title h2 mb-1">Receipt Details</h1>
+        <p class="page-subtitle mb-0">Viewing official payment record #{{ receipt.receipt_number }}</p>
+    </div>
+    <div class="header-actions">
+        <a href="{% url 'home:receipt_list' %}" class="btn btn-light px-4 border shadow-sm"
+            style="border-radius: 12px;">
+            <i class="bi bi-arrow-left me-2"></i>Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Document View -->
+    <div class="col-lg-8 mb-4">
+        <div class="dashboard-card p-0 overflow-hidden" style="border-radius: 16px;">
+            <div
+                class="receipt-preview-header p-3 bg-dark text-white d-flex justify-content-between align-items-center">
+                <span class="fw-700 small"><i class="bi bi-file-earmark-check me-2 text-warning"></i>DIGITAL
+                    RECEIPT</span>
+                <button class="btn btn-warning btn-sm fw-700 px-4" onclick="window.print();"
+                    style="border-radius: 8px;">
+                    <i class="bi bi-printer me-2"></i>Print / Save PDF
+                </button>
+            </div>
+
+            <div class="receipt-document-wrapper bg-light p-4">
+                <div class="receipt-document shadow-sm mx-auto bg-white p-5" id="printable-receipt"
+                    style="max-width: 210mm; min-height: 148mm; position: relative; border: 1px solid #eee;">
+                    <!-- Watermark -->
+                    <div
+                        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); opacity: 0.03; font-size: 8rem; font-weight: 900; pointer-events: none; white-space: nowrap; width: 100%; text-align: center; color: #000;">
+                        LUCKYTECH
+                    </div>
+
+                    <div
+                        class="receipt-top-section d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="{% static 'images/logo.jpg' %}" alt="Logo"
+                                style="width: 80px; height: 80px; border-radius: 12px; object-fit: cover;">
+                            <div>
+                                <h2 class="h4 fw-900 mb-0" style="letter-spacing: 1px; color: var(--charcoal);">
+                                    LUCKYTECH</h2>
+                                <p class="small text-muted mb-0 fw-600">INNOVATION GROUND</p>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="bg-dark text-warning p-2 px-4 rounded-3 d-inline-block mb-2 shadow-sm">
+                                <span class="fw-700 h5 mb-0">OFFICIAL RECEIPT</span>
+                            </div>
+                            <div class="text-muted fw-600 small">#{{ receipt.receipt_number }}</div>
+                            <div class="fw-700 text-dark small mt-1">{{ receipt.date|date:"M d, Y" }}</div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="company-details-mini small text-muted mb-4 pb-3 border-bottom d-flex justify-content-between flex-wrap gap-2">
+                        <span><i class="bi bi-geo-alt-fill text-warning me-1"></i>Koforidua - Adjacent Apex Bank</span>
+                        <span><i class="bi bi-telephone-fill text-warning me-1"></i>0591884422 / 0209522722</span>
+                        <span><i class="bi bi-globe text-warning me-1"></i>www.lig.com.gh</span>
+                    </div>
+
+                    <div class="receipt-body">
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded-3 border-start border-warning border-4 shadow-sm mb-3">
+                                    <div class="small text-muted text-uppercase fw-700 mb-1"
+                                        style="font-size: 0.65rem; letter-spacing: 1px;">Received From</div>
+                                    <div class="h5 fw-700 mb-0 text-dark">{{ receipt.received_from }}</div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="p-3 border rounded-3 mb-3">
+                                    <div class="small text-muted text-uppercase fw-700 mb-1"
+                                        style="font-size: 0.65rem; letter-spacing: 1px;">The Sum of</div>
+                                    <div class="fw-600 text-dark italic">"{{ receipt.ghc }}"</div>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="p-3 border rounded-3 h-100">
+                                    <div class="small text-muted text-uppercase fw-700 mb-1"
+                                        style="font-size: 0.65rem; letter-spacing: 1px;">Purpose (Being)</div>
+                                    <div class="fw-500 text-dark small">{{ receipt.purpose }}</div>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div
+                                    class="p-3 bg-dark rounded-3 h-100 d-flex flex-column justify-content-center text-center shadow-sm">
+                                    <div class="text-warning small text-uppercase fw-700 mb-1"
+                                        style="font-size: 0.65rem; letter-spacing: 1px;">Total Amount Paid</div>
+                                    <div class="h3 fw-900 text-white mb-0">₵{{ receipt.formatted_amount }}</div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <div class="row g-3">
+                                    <div class="col-4">
+                                        <div class="small text-muted fw-700 mb-1">Model No:</div>
+                                        <div class="fw-600 border-bottom pb-1 small">
+                                            {{ receipt.model_no|default:"---" }}
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="small text-muted fw-700 mb-1">Serial No:</div>
+                                        <div class="fw-600 border-bottom pb-1 small">
+                                            {{ receipt.serial_no|default:"---" }}
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="small text-muted fw-700 mb-1">Ref/Cash #:</div>
+                                        <div class="fw-600 border-bottom pb-1 small">
+                                            {{ receipt.cash_cheque_no|default:"---" }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="receipt-signature mt-5 pt-4 d-flex justify-content-between align-items-end">
+                        <div class="text-center" style="width: 150px;">
+                            <div class="small text-muted mb-2 fw-700">Recipient Sign</div>
+                            <div style="height: 30px; border-bottom: 1px solid #dee2e6;"></div>
+                        </div>
+                        <div class="text-center" style="width: 200px;">
+                            <div class="small text-muted mb-2 fw-700">
+                                Manager: {{ receipt.manager_sign|default:"LUCKYTECH" }}
+                            </div>
+                            <div style="height: 30px; border-bottom: 2px solid var(--charcoal); position: relative;">
+                                <div
+                                    style="position: absolute; bottom: 5px; right: 20px; font-family: 'Brush Script MT', cursive; font-size: 1.5rem; opacity: 0.5; color: var(--charcoal);">
+                                    LuckyTech
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="receipt-footer-text text-center text-muted x-small mt-5 pt-3">
+                        Computer & IT Experts | Networking | Web Dev | Training | Innovative Products
+                        <br>
+                        <span class="fw-700">Merchant ID # 972913 | Professional Service Guaranteed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metadata Panel -->
+    <div class="col-lg-4">
+        <div class="dashboard-card mb-4">
+            <h3 class="h6 fw-700 mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Information</h3>
+            <ul class="list-unstyled mb-0">
+                <li class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                    <span class="small text-muted">Created On</span>
+                    <span class="small fw-700">{{ receipt.date_created|date:"M d, Y H:i" }}</span>
+                </li>
+                <li class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                    <span class="small text-muted">Generated By</span>
+                    <span class="small fw-700">{{ receipt.created_by|default:"System Admin" }}</span>
+                </li>
+                <li class="d-flex justify-content-between mb-3">
+                    <span class="small text-muted">Status</span>
+                    <span class="badge bg-success-soft text-success px-3">RECORDED</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="dashboard-card text-center py-4 bg-light border-0">
+            <div class="mb-3 text-muted">
+                <i class="bi bi-info-circle display-6 opacity-25"></i>
+            </div>
+            <p class="small text-muted px-3">
+                This is a secure payment record generated by LuckyTech's internal invoice system.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
 <style>
-    .detail-container {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 20px;
-        background: #f8f9fa;
-        min-height: 100vh;
+    .fw-900 {
+        font-weight: 900;
     }
 
-    .detail-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        padding: 20px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-
-    .detail-header h2 {
-        color: #333;
-        font-size: 1.8rem;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .header-actions {
-        display: flex;
-        gap: 12px;
-    }
-
-    .btn {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .print-btn {
-        background: #007bff;
-        color: white;
-    }
-
-    .print-btn:hover {
-        background: #0056b3;
-    }
-
-    .back-btn {
-        background: #6c757d;
-        color: white;
-    }
-
-    .back-btn:hover {
-        background: #545b62;
-    }
-
-    .receipt {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        margin-bottom: 30px;
-        overflow: hidden;
-        border: 1px solid #e9ecef;
-    }
-
-    .receipt-top {
-        background: #f8f9fa;
-        border-bottom: 2px solid #dee2e6;
-        padding: 30px;
-        display: flex;
-        align-items: flex-start;
-        gap: 30px;
-    }
-
-    .logo {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        min-width: 200px;
-    }
-
-    .logo-image {
-        width: 70px;
-        height: 70px;
-        border-radius: 6px;
-        object-fit: cover;
-        border: 2px solid #dee2e6;
-    }
-
-    .logo-full {
-        font-size: 1.2rem;
+    .fw-700 {
         font-weight: 700;
-        color: #333;
-        line-height: 1.2;
     }
 
-    .receipt-company-info {
-        flex: 1;
-    }
-
-    .receipt-company-info p {
-        margin-bottom: 15px;
-        font-size: 14px;
-        line-height: 1.5;
-        color: #555;
-    }
-
-    .receipt-contact {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        margin-bottom: 8px;
-        font-size: 13px;
-        color: #666;
-    }
-
-    .receipt-number {
-        background: #cc9706;
-        color: white;
-        padding: 20px 30px;
-        text-align: center;
+    .fw-600 {
         font-weight: 600;
     }
 
-    .receipt-number div:first-child {
-        font-size: 1.1rem;
-        margin-bottom: 5px;
-    }
-
-    .receipt-title {
-        font-size: 1.4rem;
-        font-weight: 700;
-        letter-spacing: 2px;
-    }
-
-    .receipt-content {
-        padding: 30px;
-    }
-
-    .receipt-field {
-        display: flex;
-        margin-bottom: 15px;
-        padding: 12px 0;
-        border-bottom: 1px solid #f1f3f4;
-    }
-
-    .receipt-field:last-child {
-        border-bottom: none;
-    }
-
-    .field-label {
-        font-weight: 600;
-        color: #495057;
-        min-width: 150px;
-        display: flex;
-        align-items: center;
-    }
-
-    .field-value {
-        flex: 1;
-        color: #333;
-    }
-
-    .receipt-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 30px;
-        margin-bottom: 15px;
-    }
-
-    .receipt-field.half {
-        margin-bottom: 0;
-    }
-
-    .receipt-currency {
-        display: flex;
-        justify-content: space-between;
-        background: #f8f9fa;
-        padding: 12px 20px;
-        border-radius: 4px;
-        margin: 15px 0;
-        font-weight: 600;
-        color: #495057;
-        border: 1px solid #dee2e6;
-    }
-
-    .receipt-footer {
-        background: #f8f9fa;
-        padding: 20px 30px;
-        border-top: 1px solid #dee2e6;
-    }
-
-    .merchant-info {
-        display: flex;
-        justify-content: space-between;
-        font-size: 14px;
-        color: #666;
+    .fw-500 {
         font-weight: 500;
     }
 
-    .receipt-meta {
-        background: white;
-        border-radius: 8px;
-        padding: 25px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        border: 1px solid #e9ecef;
+    .x-small {
+        font-size: 0.7rem;
     }
 
-    .meta-info h3 {
-        color: #495057;
-        margin-bottom: 20px;
-        font-size: 1.2rem;
-        border-bottom: 2px solid #dee2e6;
-        padding-bottom: 8px;
+    .italic {
+        font-style: italic;
     }
 
-    .meta-info p {
-        margin-bottom: 10px;
-        font-size: 14px;
-        color: #666;
-    }
-
-    .meta-info strong {
+    .receipt-document {
+        font-family: 'Inter', sans-serif;
         color: #333;
+        line-height: 1.4;
     }
 
-    @media (max-width: 768px) {
-        .detail-container {
-            padding: 15px;
-        }
-
-        .detail-header {
-            flex-direction: column;
-            gap: 15px;
-            text-align: center;
-        }
-
-        .receipt-top {
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .logo {
-            justify-content: center;
-            min-width: auto;
-        }
-
-        .receipt-row {
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-
-        .receipt-contact {
-            justify-content: center;
-        }
-
-        .merchant-info {
-            flex-direction: column;
-            gap: 8px;
-            text-align: center;
-        }
+    .bg-success-soft {
+        background-color: rgba(25, 135, 84, 0.1);
     }
 
     @media print {
         @page {
             margin: 0;
-            size: auto;
         }
 
+        /* Hide UI elements */
+        .navbar,
+        footer,
+        .page-header,
+        .receipt-preview-header,
+        .header-actions,
+        .col-lg-4,
+        .btn {
+            display: none !important;
+        }
+
+        /* Reset layout for print */
         body {
             background: white !important;
             margin: 0 !important;
             padding: 0 !important;
-            font-size: 12px !important;
-            line-height: 1.3 !important;
         }
 
-        /* Hide all browser headers and footers */
-        body::before,
-        body::after {
-            display: none !important;
-        }
-
-        * {
-            -webkit-print-color-adjust: exact !important;
-            color-adjust: exact !important;
-        }
-
-        .detail-container {
-            background: white !important;
+        .dashboard-wrapper,
+        .container-fluid,
+        .row,
+        .col-lg-8 {
             padding: 0 !important;
             margin: 0 !important;
+            width: 100% !important;
             max-width: none !important;
-            min-height: auto !important;
         }
 
-        .detail-header,
-        .receipt-meta,
-        .header-actions {
-            display: none !important;
-        }
-
-        .receipt {
-            box-shadow: none !important;
-            border-radius: 0 !important;
-            margin: 0 !important;
+        .dashboard-card {
             border: none !important;
-            page-break-inside: avoid !important;
+            box-shadow: none !important;
+            background: transparent !important;
         }
 
-        .receipt-top {
+        .receipt-document-wrapper {
+            padding: 0 !important;
+            background: transparent !important;
+        }
+
+        #printable-receipt {
+            position: static !important;
+            margin: 0 !important;
             padding: 20px !important;
-            gap: 20px !important;
-            text-align: center !important;
-            flex-direction: column !important;
-        }
-
-        .logo {
-            gap: 15px !important;
-            min-width: auto !important;
-            justify-content: center !important;
-            align-items: center !important;
-        }
-
-        .logo-image {
-            width: 60px !important;
-            height: 60px !important;
-        }
-
-        .logo-full {
-            font-size: 1.1rem !important;
-            line-height: 1.1 !important;
-            text-align: center !important;
-        }
-
-        .receipt-company-info {
-            text-align: center !important;
-        }
-
-        .receipt-company-info p {
-            font-size: 12px !important;
-            margin-bottom: 10px !important;
-            line-height: 1.3 !important;
-            text-align: center !important;
-        }
-
-        .receipt-contact {
-            font-size: 11px !important;
-            gap: 10px !important;
-            margin-bottom: 8px !important;
-            justify-content: center !important;
-            flex-wrap: wrap !important;
-        }
-
-        .receipt-number {
-            padding: 15px 20px !important;
-        }
-
-        .receipt-number div:first-child {
-            font-size: 1rem !important;
-            margin-bottom: 5px !important;
-        }
-
-        .receipt-title {
-            font-size: 1.3rem !important;
-            letter-spacing: 1px !important;
-        }
-
-        .receipt-content {
-            padding: 25px !important;
-        }
-
-        .receipt-field {
-            margin-bottom: 10px !important;
-            padding: 8px 0 !important;
-            font-size: 12px !important;
-        }
-
-        .field-label {
-            min-width: 130px !important;
-            font-size: 12px !important;
-        }
-
-        .field-value {
-            font-size: 12px !important;
-        }
-
-        .receipt-row {
-            gap: 25px !important;
-            margin-bottom: 10px !important;
-        }
-
-        .receipt-currency {
-            padding: 10px 15px !important;
-            margin: 10px 0 !important;
-            font-size: 12px !important;
-        }
-
-        .receipt-footer {
-            padding: 15px 20px !important;
-        }
-
-        .merchant-info {
-            font-size: 12px !important;
-            flex-direction: row !important;
-            justify-content: space-between !important;
-        }
-
-        /* Force single page and clean layout */
-        .receipt-top,
-        .receipt-number,
-        .receipt-content,
-        .receipt-footer {
-            page-break-inside: avoid !important;
+            width: 100% !important;
+            border: none !important;
+            box-shadow: none !important;
         }
     }
 </style>
-
-<div class="detail-container">
-    <div class="detail-header">
-        <h2>Receipt Details</h2>
-        <div class="header-actions">
-            <button class="btn print-btn" onclick="window.print();">Print Receipt</button>
-            <a href="{% url 'home:receipt_list' %}" class="btn back-btn">Back to List</a>
-        </div>
-    </div>
-    
-    <div class="receipt official-receipt" id="printable-receipt">
-        <div class="receipt-top">
-            <div class="logo">
-                <img src="{% static 'images/logo.jpg' %}" alt="LuckyTech Logo" class="logo-image">
-                <div class="logo-full">
-                    <div>LUCKYTECH</div>
-                    <div>INNOVATION</div>
-                    <div>GROUND</div>
-                </div>
-            </div>
-            <div class="receipt-company-info">
-                <p>Dealers; Computers, Laptops, Accessories, Research, Repairs. IT support for offices and Homes, Networking, Apps, Websites, Animations, Robotics, Data Recovery & engaging in Tech innovative products.</p>     
-                    <div class="receipt-contact">
-                    <span>📞 0591884422</span>
-                    <span>📱 0209522722</span>
-                        <a href="https://x.com/lig4gh" target="_blank"><i class="fab fa-x-twitter"></i></a>
-                        <a href="https://instagram.com/lig4gh" target="_blank"><i class="fab fa-instagram"></i></a>
-                        <a href="https://facebook.com/lig4gh" target="_blank"><i class="fab fa-facebook"></i></a>
-                        <a href="https://tiktok.com/@lig4gh" target="_blank"><i class="fab fa-tiktok"></i></a>
-                        <span>Lig4gh</span>
-                    </div>
-                
-                <div class="receipt-contact">
-                    <span>Email: info@lig.com.gh</span>
-                    <span>Website: www.lig.com.gh</span>
-                    <span>Loc: Adjacent Apex Bank-Koforidua</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="receipt-number">
-            <div>No. {{ receipt.receipt_number }}</div>
-            <div class="receipt-title">OFFICIAL RECEIPT</div>
-        </div>
-        
-        <div class="receipt-content">
-            <div class="receipt-field">
-                <span class="field-label">Date:</span>
-                <span class="field-value">{{ receipt.date|date:"M d, Y" }}</span>
-            </div>
-            
-            <div class="receipt-field">
-                <span class="field-label">Received from:</span>
-                <span class="field-value">{{ receipt.received_from }}</span>
-            </div>
-            
-            <div class="receipt-field">
-                <span class="field-label">The Sum of:</span>
-                <span class="field-value">{{ receipt.ghc|default:"" }}</span>
-            </div>
-            
-            <div class="receipt-row">
-                <div class="receipt-field half">
-                    <span class="field-label">GHC:</span>
-                    <span class="field-value">{{ receipt.formatted_amount }}</span>
-                </div>
-                <div class="receipt-currency">
-                    <span>Ghana Cedis</span>
-                    <span>Pesewas</span>
-                </div>
-            </div>
-        
-            <div class="receipt-field">
-                <span class="field-label">Being:</span>
-                <span class="field-value">{{ receipt.purpose }}</span>
-            </div>
-            
-            {% if receipt.model_no %}
-            <div class="receipt-field">
-                <span class="field-label">Model No.:</span>
-                <span class="field-value">{{ receipt.model_no }}</span>
-            </div>
-            {% endif %}
-            
-            <div class="receipt-row">
-                <div class="receipt-field half">
-                    <span class="field-label">CASH/CHEQUE NO.:</span>
-                    <span class="field-value">{{ receipt.cash_cheque_no|default:"" }}</span>
-                </div>
-                
-                <div class="receipt-field half">
-                    <span class="field-label">Serial No.:</span>
-                    <span class="field-value">{{ receipt.serial_no|default:"" }}</span>
-                </div>
-            </div>
-            
-            <div class="receipt-field">
-                <span class="field-label">Manager's sign.:</span>
-                <span class="field-value">{{ receipt.manager_sign|default:"" }}</span>
-            </div>
-        </div>
-        
-        <div class="receipt-footer">
-            <div class="merchant-info">
-                <span>Merchant ID # 972913</span>
-                <span>Name: LuckyTech Innovation Ground</span>
-            </div>
-        </div>
-    </div>
-    
-    <div class="receipt-meta">
-        <div class="meta-info">
-            <h3>Receipt Information</h3>
-            <p><strong>Created:</strong> {{ receipt.date_created|date:"M d, Y H:i" }}</p>
-            <p><strong>Created by:</strong> {{ receipt.created_by }}</p>
-            {% if receipt.notes %}
-                <p><strong>Notes:</strong> {{ receipt.notes }}</p>
-            {% endif %}
-        </div>
-    </div>
-</div>
 {% endblock %}

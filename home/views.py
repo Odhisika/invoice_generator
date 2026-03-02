@@ -94,11 +94,11 @@ def cash_invoice(request):
                 try:
                     vat_percentage = Decimal(request.POST.get('vat_percentage', '0'))
                     # Validate VAT percentage is within allowed range
-                    if 4 <= vat_percentage <= 14:
+                    if 4 <= vat_percentage <= 22:
                         vat_amount = (subtotal_amount * vat_percentage) / Decimal('100')
                         total_amount = subtotal_amount + vat_amount
                     else:
-                        messages.error(request, 'VAT percentage must be between 4% and 14%.')
+                        messages.error(request, 'VAT percentage must be between 4% and 22%.')
                         return render(request, 'home/cash_invoice.html', {'form': form})
                 except (ValueError, TypeError):
                     messages.error(request, 'Invalid VAT percentage value.')

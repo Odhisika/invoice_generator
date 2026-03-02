@@ -1,433 +1,301 @@
-{% extends 'home/base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Invoice Detail - LuckyTech{% endblock %}
+{% block title %}Invoice #{{ invoice_data.invoice_number }} - LuckyTech Innovation Ground{% endblock %}
 
 {% block content %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-<style>
-    .receipt-preview {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 20px;
-        background: #f8f9fa;
-        min-height: 100vh;
-    }
-
-    .receipt-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        padding: 20px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .receipt-header h3 {
-        color: #333;
-        font-size: 1.8rem;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .btn {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-left: 10px;
-    }
-
-    .print-btn {
-        background: #007bff;
-        color: white;
-    }
-
-    .print-btn:hover {
-        background: #0056b3;
-    }
-
-    .back-btn {
-        background: #6c757d;
-        color: white;
-    }
-
-    .back-btn:hover {
-        background: #545b62;
-    }
-
-    .cash-invoice {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        background-color: white;
-    }
-
-    @media print {
-        @page {
-            margin: 0;
-            size: auto;
-        }
-
-        body {
-            background: white !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            font-size: 12px !important;
-            line-height: 1.3 !important;
-        }
-
-        /* Hide all browser headers and footers */
-        body::before,
-        body::after {
-            display: none !important;
-        }
-
-        * {
-            -webkit-print-color-adjust: exact !important;
-            color-adjust: exact !important;
-        }
-
-        .receipt-preview {
-            background: white !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            max-width: none !important;
-            min-height: auto !important;
-        }
-
-        .receipt-header {
-            display: none !important;
-        }
-
-        .cash-invoice {
-            box-shadow: none !important;
-            border: none !important;
-            border-radius: 0 !important;
-            margin: 0 !important;
-            padding: 15px !important;
-            max-width: none !important;
-        }
-
-        .receipt-top header {
-            margin-bottom: 20px !important;
-            padding-top: 10px !important;
-        }
-
-        .logo {
-            gap: 12px !important;
-        }
-
-        .logo-image {
-            width: 60px !important;
-        }
-
-        .logo-full {
-            font-size: 16px !important;
-            line-height: 1.2 !important;
-        }
-
-        .receipt-company-info {
-            margin-top: 20px !important;
-            padding-top: 12px !important;
-        }
-
-        .receipt-company-info p {
-            font-size: 11px !important;
-            margin-bottom: 10px !important;
-        }
-
-        .receipt-contact {
-            font-size: 10px !important;
-            gap: 8px !important;
-            margin-bottom: 8px !important;
-        }
-
-        .receipt-title-section {
-            padding: 8px !important;
-            margin: 15px 0 !important;
-        }
-
-        .invoice-title {
-            font-size: 18px !important;
-        }
-
-        .invoice-number {
-            font-size: 14px !important;
-        }
-
-        .invoice-customer-info {
-            margin-bottom: 12px !important;
-            font-size: 12px !important;
-        }
-
-        .address-field {
-            margin-bottom: 15px !important;
-            font-size: 12px !important;
-        }
-
-        .invoice-table {
-            margin-bottom: 20px !important;
-        }
-
-        .invoice-table-header {
-            padding: 8px 5px !important;
-            font-size: 11px !important;
-        }
-
-        .invoice-table-row {
-            padding: 6px 5px !important;
-            font-size: 11px !important;
-        }
-
-        .invoice-total-section {
-            margin: 15px 0 !important;
-        }
-
-        .invoice-total-section>div {
-            padding: 6px !important;
-            margin-bottom: 8px !important;
-        }
-
-        .invoice-subtotal-label,
-        .invoice-subtotal-value,
-        .invoice-vat-label,
-        .invoice-vat-value {
-            font-size: 12px !important;
-        }
-
-        .invoice-total-label,
-        .invoice-total-value {
-            font-size: 14px !important;
-        }
-
-        .invoice-signature-section {
-            margin-top: 20px !important;
-            padding-top: 15px !important;
-            font-size: 12px !important;
-        }
-
-        .signature-line {
-            margin-top: 20px !important;
-        }
-    }
-</style>
-
-<!-- Action Buttons -->
-<div class="receipt-preview">
-    <div class="receipt-header">
-        <h3>Invoice Detail</h3>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn print-btn" onclick="window.print();">Print Invoice</button>
-            <button class="btn" onclick="downloadPDF()">Download PDF</button>
-            <a href="{% url 'home:invoice_list' %}" class="btn back-btn">Back to List</a>
-        </div>
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+        <h1 class="page-title h2 mb-1">Invoice Details</h1>
+        <p class="page-subtitle mb-0">Viewing high-end tax invoice #{{ invoice_data.invoice_number }}</p>
     </div>
+    <div class="header-actions">
+        <a href="{% url 'home:invoice_list' %}" class="btn btn-light px-4 border shadow-sm"
+            style="border-radius: 12px;">
+            <i class="bi bi-arrow-left me-2"></i>Back to List
+        </a>
+    </div>
+</div>
 
-    <div class="receipt cash-invoice" id="printable-receipt">
-        <div class="receipt-top">
-            <header
-                style="display: flex; justify-content: center; align-items: center; margin-bottom: 25px; padding-top: 15px;">
-                <div class="logo" style="display: flex; align-items: center; gap: 15px;">
-                    <img src="{% static 'images/logo.jpg' %}" alt="LuckyTech Logo" class="logo-image"
-                        style="width: 80px; height: auto;">
-                    <div class="logo-full"
-                        style="font-weight: bold; font-size: 18px; text-align: center; line-height: 1.3;">
-                        <div>LUCKYTECH</div>
-                        <div>INNOVATION</div>
-                        <div>GROUND</div>
+<div class="row">
+    <!-- Document View -->
+    <div class="col-lg-9 mb-4 mx-auto">
+        <div class="dashboard-card p-0 overflow-hidden shadow-lg" style="border-radius: 16px;">
+            <div
+                class="invoice-preview-header p-3 bg-dark text-white d-flex justify-content-between align-items-center">
+                <span class="fw-700 small"><i class="bi bi-file-earmark-text me-2 text-warning"></i>OFFICIAL TAX
+                    INVOICE</span>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-warning btn-sm fw-700 px-4" onclick="window.print();"
+                        style="border-radius: 8px;">
+                        <i class="bi bi-printer me-2"></i>Print
+                    </button>
+                    <button class="btn btn-outline-light btn-sm px-4" onclick="downloadPDF()"
+                        style="border-radius: 8px; border-color: rgba(255,255,255,0.2);">
+                        <i class="bi bi-download me-2"></i>PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Printable Content -->
+            <div class="invoice-document-wrapper bg-light p-4">
+                <div class="invoice-document shadow-sm mx-auto bg-white p-5" id="printable-receipt"
+                    style="max-width: 210mm; min-height: 297mm; position: relative; border: 1px solid #eee;">
+                    <!-- Watermark -->
+                    <div
+                        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); opacity: 0.03; font-size: 8rem; font-weight: 900; pointer-events: none; white-space: nowrap; width: 100%; text-align: center; color: #000;">
+                        LUCKYTECH
+                    </div>
+
+                    <div
+                        class="invoice-top-section d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="{% static 'images/logo.jpg' %}" alt="Logo"
+                                style="width: 80px; height: 80px; border-radius: 12px; object-fit: cover;">
+                            <div>
+                                <h2 class="h4 fw-900 mb-0" style="letter-spacing: 1px; color: var(--charcoal);">
+                                    LUCKYTECH</h2>
+                                <p class="small text-muted mb-0 fw-600">INNOVATION GROUND</p>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="bg-dark text-warning p-2 px-4 rounded-3 d-inline-block mb-2 shadow-sm">
+                                <span class="fw-700 h5 mb-0">CASH SALES/INVOICE</span>
+                            </div>
+                            <div class="text-muted fw-600 small">INV #{{ invoice_data.invoice_number }}</div>
+                            <div class="fw-700 text-dark small mt-1">{{ invoice_data.date }}</div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-7">
+                            <div class="small text-muted text-uppercase fw-700 mb-1"
+                                style="font-size: 0.65rem; letter-spacing: 1px;">Billed To</div>
+                            <div class="h6 fw-900 mb-1 text-dark">{{ invoice_data.customer_name }}</div>
+                            <div class="small fw-600 text-muted" style="max-width: 250px;">
+                                {{ invoice_data.customer_address|default:"No physical address provided" }}</div>
+                        </div>
+                        <div class="col-5">
+                            <div class="p-3 bg-light rounded-3 border-end border-warning border-4 text-end">
+                                <div class="small text-muted text-uppercase fw-700 mb-1"
+                                    style="font-size: 0.65rem; letter-spacing: 1px;">Company Contact</div>
+                                <div class="small fw-600 text-dark">0591884422 / 0209522722</div>
+                                <div class="small fw-600 text-dark">info@lig.com.gh</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="invoice-body mb-4">
+                        <table class="table table-sm border">
+                            <thead>
+                                <tr class="bg-dark text-white shadow-sm" style="font-size: 0.75rem;">
+                                    <th class="ps-3 py-2">DESCRIPTION</th>
+                                    <th class="text-center py-2">QTY</th>
+                                    <th class="text-end py-2">UNIT PRICE</th>
+                                    <th class="text-end pe-3 py-2">AMOUNT</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in invoice_data.products %}
+                                <tr style="font-size: 0.85rem;">
+                                    <td class="ps-3 py-2 fw-600 border-bottom">{{ product.desc }}</td>
+                                    <td class="text-center py-2 border-bottom">{{ product.qty }}</td>
+                                    <td class="text-end py-2 border-bottom">₵{{ product.price }}</td>
+                                    <td class="text-end pe-3 py-2 fw-700 border-bottom">₵{{ product.total }}</td>
+                                </tr>
+                                {% endfor %}
+
+                                {% if invoice_data.nontax_items %}
+                                <tr class="bg-light">
+                                    <td colspan="4"
+                                        class="ps-3 py-1 fw-700 x-small text-muted border-bottom text-uppercase"
+                                        style="letter-spacing: 1px;">Non-Taxable Items / Services</td>
+                                </tr>
+                                {% for item in invoice_data.nontax_items %}
+                                <tr style="font-size: 0.85rem;">
+                                    <td class="ps-3 py-2 border-bottom text-muted">{{ item.desc }}</td>
+                                    <td class="text-center py-2 border-bottom text-muted">{{ item.qty }}</td>
+                                    <td class="text-end py-2 border-bottom text-muted">₵{{ item.price }}</td>
+                                    <td class="text-end pe-3 py-2 fw-700 border-bottom text-muted">₵{{ item.total }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-7">
+                            <div class="p-4 bg-light rounded-4 h-100 border">
+                                <h6 class="fw-900 small text-uppercase mb-2" style="letter-spacing: 1px;">Terms &
+                                    Conditions</h6>
+                                <p class="x-small text-muted mb-0 lh-base">
+                                    • Products once sold are not returnable. <br>
+                                    • All repairs carry a 1-month warranty unless stated otherwise. <br>
+                                    • Payment is due immediately upon receipt of this invoice. <br>
+                                    • Thank you for your business with LuckyTech!
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <div class="text-end">
+                                <div class="d-flex justify-content-between mb-2 small px-2">
+                                    <span class="text-muted fw-600">Subtotal (Taxable):</span>
+                                    <span class="fw-700 text-dark">₵{{ invoice_data.subtotal_amount }}</span>
+                                </div>
+                                {% if invoice_data.vat_applicable %}
+                                <div class="d-flex justify-content-between mb-2 small px-2 text-warning">
+                                    <span class="fw-700">VAT ({{ invoice_data.vat_percentage }}%):</span>
+                                    <span class="fw-700">₵{{ invoice_data.vat_amount }}</span>
+                                </div>
+                                {% endif %}
+                                {% if invoice_data.nontax_total and invoice_data.nontax_total > 0 %}
+                                <div class="d-flex justify-content-between mb-3 small px-2">
+                                    <span class="text-muted fw-600">Non-Tax Total:</span>
+                                    <span class="fw-700 text-dark">₵{{ invoice_data.nontax_total }}</span>
+                                </div>
+                                {% endif %}
+                                <div class="d-flex justify-content-between bg-dark text-warning rounded-3 p-3 shadow">
+                                    <span class="fw-900">GRAND TOTAL:</span>
+                                    <span class="h5 fw-900 mb-0">GH₵ {{ invoice_data.total_amount }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="invoice-signature mt-5 pt-4 d-flex justify-content-between align-items-end">
+                        <div class="text-center" style="width: 180px;">
+                            <div class="fw-900 text-dark border-bottom pb-2 mb-1" style="font-size: 0.85rem;">
+                                {{ invoice_data.customer_sign|default:"________________" }}</div>
+                            <div class="x-small text-muted fw-700 text-uppercase" style="letter-spacing: 1px;">Customer
+                                Sign</div>
+                        </div>
+                        <div class="text-center" style="width: 220px;">
+                            <div class="fw-900 text-dark border-bottom border-warning border-3 pb-2 mb-1"
+                                style="font-size: 0.85rem; position: relative;">
+                                {{ invoice_data.manager_sign|default:"LUCKYTECH MANAGER" }}
+                                <div
+                                    style="position: absolute; bottom: 15px; right: 10px; font-family: 'Brush Script MT', cursive; font-size: 1.5rem; opacity: 0.3; color: var(--charcoal);">
+                                    LuckyTech
+                                </div>
+                            </div>
+                            <div class="x-small text-muted fw-700 text-uppercase" style="letter-spacing: 1px;">
+                                Authorized Manager</div>
+                        </div>
+                    </div>
+
+                    <div class="invoice-footer-text text-center text-muted x-small mt-5 pt-4 border-top">
+                        <span class="fw-700 text-dark">LuckyTech Innovation Ground</span> | Dealers in Computers, IT
+                        Support, Robotics & Apps
+                        <br>
+                        Location: Adjacent Apex Bank, Koforidua | Merchant ID # 972913
                     </div>
                 </div>
-            </header>
-
-            <div class="receipt-company-info"
-                style="margin-top: 30px; border-top: 1px solid #eaeaea; padding-top: 15px;">
-                <p style="text-align: center; margin-bottom: 15px;">Dealers; Computers, Laptops, Accessories, Research,
-                    Repairs. IT support for offices and Homes, Networking, Apps, Websites, Animations, Robotics, Data
-                    Recovery & engaging in Tech innovative products.</p>
-                <div class="receipt-contact"
-                    style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
-                    <span>📞 0591884422</span>
-                    <span>📱 0209522722</span>
-                    <span>All social Handles:</span>
-                    <span>🐦 ⭕ 📘 🎵</span>
-                    <span>Lig4gh</span>
-                </div>
-                <div class="receipt-contact"
-                    style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-                    <span>Email: info@lig.com.gh</span>
-                    <span>Website: www.lig.com.gh</span>
-                    <span>Loc: Adjacent Apex Bank-Koforidua</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="receipt-title-section"
-            style="background-color: #f8f8f8; padding: 10px; margin: 20px 0; text-align: center; border-radius: 4px; border: 1px solid #e0e0e0;">
-            <div class="invoice-title" style="font-size: 22px; font-weight: bold;">CASH SALES/INVOICE</div>
-            <div class="invoice-number" style="font-size: 16px;">No. {{ invoice_data.invoice_number }}</div>
-        </div>
-
-        <div class="invoice-customer-info" style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-            <div class="invoice-field" style="flex: 1;">
-                <span class="field-label" style="font-weight: bold;">Customer Name:</span>
-                <span class="field-value">{{ invoice_data.customer_name }}</span>
-            </div>
-            <div class="invoice-field date-field" style="text-align: right;">
-                <span class="field-label" style="font-weight: bold;">Date:</span>
-                <span class="field-value">{{ invoice_data.date }}</span>
-            </div>
-        </div>
-
-        <div class="invoice-field address-field" style="margin-bottom: 20px;">
-            <span class="field-label" style="font-weight: bold;">Customer Address:</span>
-            <span class="field-value">{{ invoice_data.customer_address }}</span>
-        </div>
-
-        <!-- Taxable Products Table -->
-        <div class="invoice-table"
-            style="margin-bottom: 25px; border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden;">
-            <div
-                style="background-color: #f0f0f0; padding: 8px; text-align: center; font-weight: bold; border-bottom: 1px solid #e0e0e0;">
-                TAXABLE PRODUCTS
-            </div>
-            <div class="invoice-table-header"
-                style="background-color: #f0f0f0; padding: 10px 5px; display: flex; font-weight: bold; border-bottom: 1px solid #e0e0e0;">
-                <div class="col-num" style="width: 8%; text-align: center;">No.</div>
-                <div class="col-desc" style="width: 45%; padding-left: 5px;">PRODUCT(s) DESCRIPTION</div>
-                <div class="col-qty" style="width: 10%; text-align: center;">QTY</div>
-                <div class="col-price" style="width: 17%; text-align: right;">UNIT PRICE</div>
-                <div class="col-total" style="width: 20%; text-align: right; padding-right: 5px;">GH₵ TOTAL</div>
-            </div>
-
-            <div class="invoice-table-body">
-                {% for product in invoice_data.products %}
-                <div class="invoice-table-row"
-                    style="display: flex; padding: 8px 5px; {% if forloop.counter|divisibleby:2 %}background-color: #f9f9f9;{% endif %}">
-                    <div class="col-num" style="width: 8%; text-align: center;">{{ forloop.counter }}</div>
-                    <div class="col-desc" style="width: 45%; padding-left: 5px;">{{ product.desc }}</div>
-                    <div class="col-qty" style="width: 10%; text-align: center;">{{ product.qty }}</div>
-                    <div class="col-price" style="width: 17%; text-align: right;">{{ product.price }}</div>
-                    <div class="col-total" style="width: 20%; text-align: right; padding-right: 5px;">{{ product.total
-                        }}</div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        {% if invoice_data.nontax_items and invoice_data.nontax_items|length > 0 %}
-        <!-- Non-Tax Items Table -->
-        <div class="invoice-table"
-            style="margin-bottom: 25px; border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden;">
-            <div
-                style="background-color: #e8f4fd; padding: 8px; text-align: center; font-weight: bold; border-bottom: 1px solid #e0e0e0;">
-                NON-TAX ITEMS (Transport/Delivery)
-            </div>
-            <div class="invoice-table-header"
-                style="background-color: #f0f0f0; padding: 10px 5px; display: flex; font-weight: bold; border-bottom: 1px solid #e0e0e0;">
-                <div class="col-num" style="width: 8%; text-align: center;">No.</div>
-                <div class="col-desc" style="width: 45%; padding-left: 5px;">DESCRIPTION</div>
-                <div class="col-qty" style="width: 10%; text-align: center;">QTY</div>
-                <div class="col-price" style="width: 17%; text-align: right;">UNIT PRICE</div>
-                <div class="col-total" style="width: 20%; text-align: right; padding-right: 5px;">GH₵ TOTAL</div>
-            </div>
-
-            <div class="invoice-table-body">
-                {% for item in invoice_data.nontax_items %}
-                <div class="invoice-table-row"
-                    style="display: flex; padding: 8px 5px; {% if forloop.counter|divisibleby:2 %}background-color: #f9f9f9;{% endif %}">
-                    <div class="col-num" style="width: 8%; text-align: center;">{{ forloop.counter }}</div>
-                    <div class="col-desc" style="width: 45%; padding-left: 5px;">{{ item.desc }}</div>
-                    <div class="col-qty" style="width: 10%; text-align: center;">{{ item.qty }}</div>
-                    <div class="col-price" style="width: 17%; text-align: right;">{{ item.price }}</div>
-                    <div class="col-total" style="width: 20%; text-align: right; padding-right: 5px;">{{ item.total }}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        <div class="invoice-total-section" style="margin: 20px 0;">
-            <div
-                style="display: flex; justify-content: flex-end; margin-bottom: 10px; padding: 8px; background-color: #f8f8f8; border-radius: 4px;">
-                <div class="invoice-subtotal-label" style="font-weight: bold; margin-right: 15px; font-size: 16px;">
-                    Subtotal (Taxable) GH₵:</div>
-                <div class="invoice-subtotal-value" style="font-weight: bold; font-size: 16px;">{{
-                    invoice_data.subtotal_amount }}</div>
-            </div>
-
-            {% if invoice_data.vat_applicable %}
-            <div
-                style="display: flex; justify-content: flex-end; margin-bottom: 10px; padding: 8px; background-color: #f0f8ff; border-radius: 4px;">
-                <div class="invoice-vat-label" style="font-weight: bold; margin-right: 15px; font-size: 16px;">VAT ({{
-                    invoice_data.vat_percentage }}%) GH₵:</div>
-                <div class="invoice-vat-value" style="font-weight: bold; font-size: 16px;">{{ invoice_data.vat_amount }}
-                </div>
-            </div>
-            {% endif %}
-
-            {% if invoice_data.nontax_total and invoice_data.nontax_total > 0 %}
-            <div
-                style="display: flex; justify-content: flex-end; margin-bottom: 12px; padding: 10px; background-color: #e8f4fd; border-radius: 4px; border-left: 4px solid #55585a;">
-                <div style="font-weight: 600; font-size: 15px; color: #333; margin-right: 15px;">Non-Tax Items Total
-                    GH₵:</div>
-                <div style="font-weight: 700; font-size: 15px; color: #37424d;">{{ invoice_data.nontax_total }}</div>
-            </div>
-            {% endif %}
-
-            <div
-                style="display: flex; justify-content: flex-end; padding: 10px; background-color: #e8f5e8; border-radius: 4px; border: 2px solid #4CAF50;">
-                <div class="invoice-total-label" style="font-weight: bold; margin-right: 15px; font-size: 18px;">Total
-                    GH₵:</div>
-                <div class="invoice-total-value" style="font-weight: bold; font-size: 18px; color: #2E7D32;">{{
-                    invoice_data.total_amount }}</div>
-            </div>
-        </div>
-
-        <div class="invoice-signature-section"
-            style="display: flex; justify-content: space-between; margin-top: 30px; padding-top: 20px;">
-            <div class="signature-field" style="width: 45%;">
-                <span class="field-label" style="font-weight: bold; display: block; margin-bottom: 5px;">Customer
-                    Signature:</span>
-                <span class="field-value">{{ invoice_data.customer_sign }}</span>
-                <div class="signature-line" style="border-top: 1px solid #000; width: 100%; margin-top: 25px;"></div>
-            </div>
-
-            <div class="signature-field" style="width: 45%;">
-                <span class="field-label" style="font-weight: bold; display: block; margin-bottom: 5px;">Manager's
-                    Signature:</span>
-                <span class="field-value">{{ invoice_data.manager_sign }}</span>
-                <div class="signature-line" style="border-top: 1px solid #000; width: 100%; margin-top: 25px;"></div>
             </div>
         </div>
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
     function downloadPDF() {
         const element = document.getElementById('printable-receipt');
         const opt = {
-            margin: 0.3,
-            filename: 'invoice_{{ invoice_data.customer_name|slugify }}_{{ invoice_data.date }}.pdf',
+            margin: 10,
+            filename: 'LuckyTech_Invoice_{{ invoice_data.invoice_number }}.pdf',
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            html2canvas: { scale: 3, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
         html2pdf().set(opt).from(element).save();
     }
 </script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .fw-900 {
+        font-weight: 900;
+    }
+
+    .fw-700 {
+        font-weight: 700;
+    }
+
+    .fw-600 {
+        font-weight: 600;
+    }
+
+    .fw-500 {
+        font-weight: 500;
+    }
+
+    .x-small {
+        font-size: 0.7rem;
+    }
+
+    .italic {
+        font-style: italic;
+    }
+
+    .invoice-document {
+        font-family: 'Inter', sans-serif;
+        color: #333;
+        line-height: 1.4;
+    }
+
+    @media print {
+        @page {
+            margin: 0;
+        }
+
+        /* Hide UI elements */
+        .navbar,
+        footer,
+        .page-header,
+        .invoice-preview-header,
+        .header-actions,
+        .btn {
+            display: none !important;
+        }
+
+        /* Reset layout for print */
+        body {
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .dashboard-wrapper,
+        .container-fluid,
+        .row,
+        .col-lg-9 {
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+        }
+
+        .dashboard-card {
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+        }
+
+        .invoice-document-wrapper {
+            padding: 0 !important;
+            background: transparent !important;
+        }
+
+        #printable-receipt {
+            position: static !important;
+            margin: 0 !important;
+            padding: 20px !important;
+            width: 100% !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+    }
+</style>
 {% endblock %}

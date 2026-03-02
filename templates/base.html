@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard - LuckyTech{% endblock %}</title>
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-gold: #c5a028;
+            --light-gold: #fcf6ba;
+            --dark-gold: #8e6e1d;
+            --charcoal: #0c0a09;
+            --glass-white: rgba(255, 255, 255, 0.03);
+            --border-gold: rgba(191, 149, 63, 0.2);
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: var(--charcoal);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid var(--primary-gold);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--primary-gold) !important;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            font-size: 1.5rem;
+        }
+
+        .navbar-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.7) !important;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-gold) !important;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #f8fafc;
+            padding: 0.5rem 1.25rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        /* Dashboard Content Area */
+        .dashboard-wrapper {
+            padding: 3rem 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.025em;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        /* Professional Card System */
+        .dashboard-card {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            height: 100%;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: var(--primary-gold);
+        }
+
+        .card-accent {
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-gold), var(--light-gold));
+        }
+
+        .card-icon-wrapper {
+            width: 56px;
+            height: 56px;
+            background: #fefce8;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: var(--primary-gold);
+            font-size: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .dashboard-card:hover .card-icon-wrapper {
+            background: var(--primary-gold);
+            color: white;
+        }
+
+        /* Statistics */
+        .stat-card {
+            padding: 1.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Table/Activity Styles */
+        .activity-table {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .activity-table th {
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 1.5rem;
+        }
+
+        .activity-table td {
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+        }
+
+        /* Branding Components */
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #bf953f 0%, #daa520 45%, #b38728 75%, #aa771c 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        footer {
+            background: var(--charcoal);
+            color: white;
+            padding: 4rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-detail {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+            max-width: 600px;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'home:index' %}">
+                <img src="{% static 'images/logo.jpg' %}" alt="LuckyTech Logo" class="navbar-logo">
+                <span>LUCKYTECH</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="bi bi-list fs-2 text-white"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                    <li class="nav-item">
+                        <a class="nav-link px-3" href="{% url 'home:receipt_list' %}">Receipts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3" href="{% url 'home:invoice_list' %}">Invoices</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center gap-4">
+                    <div class="text-white-50 d-none d-lg-block text-end">
+                        <small class="d-block mb-0" style="font-size: 0.75rem;">Connected as</small>
+                        <div class="text-white fw-600" style="margin-top: -4px;">{{ user.username }}</div>
+                    </div>
+                    <form method="post" action="{% url 'accounts:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-btn">
+                            <i class="bi bi-box-arrow-right me-2 text-warning"></i>Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-wrapper">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm mb-4" role="alert"
+            style="border-radius: 12px;">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <footer>
+        <div class="container text-center">
+            <div class="footer-logo gold-gradient-text">LUCKYTECH INNOVATION GROUND</div>
+            <p class="footer-detail mx-auto mb-4">
+                Dealers in Computers, Laptops, Accessories, Research, Repairs. IT support for Offices and Homes,
+                Networking,
+                Apps, Websites, Animations, Robotics, Data Recovery & Tech Innovations.
+            </p>
+            <div class="d-flex flex-wrap justify-content-center gap-4 text-white-50 small mb-4">
+                <span><i class="bi bi-geo-alt me-2 text-warning"></i>Adjacent Apex Bank-Koforidua</span>
+                <a href="http://www.lig.com.gh" target="_blank" class="text-white-50 text-decoration-none">
+                    <i class="bi bi-globe me-2 text-warning"></i>www.lig.com.gh
+                </a>
+                <span><i class="bi bi-telephone me-2 text-warning"></i>+233 (0)244000000</span>
+            </div>
+            <div class="pt-4 border-top border-secondary text-white-50 x-small" style="font-size: 0.75rem;">
+                &copy; {% now "Y" %} LuckyTech Innovation Ground. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

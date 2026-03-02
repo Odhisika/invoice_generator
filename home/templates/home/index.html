@@ -1,499 +1,217 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'base.html' %}
 {% load static %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LuckyTech Receipt Generator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-    <style>
-        :root {
-            --primary-gold: #FFD700;
-            --secondary-gold: #DAA520;
-            --accent-yellow: #FFFACD;
-            --text-dark: #333333;
-            --text-light: #666666;
-            --white: #ffffff;
-            --bg-light: #f8f9fa;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
-        }
+{% block title %}Dashboard - LuckyTech Innovation Ground{% endblock %}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--white);
-            color: var(--text-dark);
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Authentication Navigation */
-        .auth-nav {
-            background-color: var(--white);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .welcome-text {
-            color: var(--text-dark);
-            font-weight: 500;
-            margin-right: 1.5rem;
-        }
-
-        .logout-btn {
-            background-color: var(--white);
-            color: #dc3545;
-            border: 1px solid #dc3545;
-            padding: 0.5rem 1.2rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .logout-btn:hover {
-            background-color: #dc3545;
-            color: var(--white);
-        }
-
-        /* Main Content */
-        .landing-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-            width: 100%;
-            flex: 1;
-        }
-
-        /* Welcome Section */
-        .welcome-section {
-            text-align: center;
-            margin-bottom: 3rem;
-            padding: 2rem;
-            background: linear-gradient(135deg, var(--white) 0%, var(--accent-yellow) 100%);
-            border-radius: 15px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(218, 165, 32, 0.2);
-        }
-
-        .logo {
-            width: 120px;
-            height: auto;
-            margin-bottom: 1rem;
-            border-radius: 50%;
-            box-shadow: 0 4px 15px rgba(218, 165, 32, 0.3);
-            border: 3px solid var(--primary-gold);
-        }
-
-        .welcome-section h1 {
-            color: var(--text-dark);
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            font-weight: 700;
-        }
-
-        .welcome-section h2 {
-            color: var(--secondary-gold);
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
-        .welcome-section p {
-            color: var(--text-light);
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* Stats Dashboard */
-        .dashboard-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3rem;
-        }
-
-        .stat-card {
-            background: var(--white);
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            text-align: center;
-            border-top: 4px solid var(--primary-gold);
-            transition: var(--transition);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--secondary-gold);
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            color: var(--text-light);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.9rem;
-        }
-
-        /* Action Grid */
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .action-card {
-            background: var(--white);
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            text-decoration: none;
-            color: var(--text-dark);
-            border: 1px solid #eee;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .action-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            border-color: var(--primary-gold);
-        }
-
-        .card-header {
-            background-color: var(--primary-gold);
-            padding: 1.5rem;
-            text-align: center;
-        }
-
-        .card-header h3 {
-            color: var(--text-dark);
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .card-body {
-            padding: 2rem;
-            text-align: center;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .card-body p {
-            color: var(--text-light);
-            margin-bottom: 1.5rem;
-        }
-
-        .btn-icon {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            display: block;
-        }
-
-        /* Recent Activity */
-        .recent-activity {
-            background: var(--white);
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: var(--shadow);
-            margin-bottom: 3rem;
-        }
-
-        .recent-activity h2 {
-            color: var(--text-dark);
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--primary-gold);
-            display: inline-block;
-        }
-
-        .recent-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .recent-column h3 {
-            color: var(--secondary-gold);
-            margin-bottom: 1rem;
-            font-size: 1.2rem;
-        }
-
-        .activity-list {
-            list-style: none;
-        }
-
-        .activity-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid #eee;
-            transition: var(--transition);
-        }
-
-        .activity-item:hover {
-            background-color: var(--accent-yellow);
-            padding-left: 1.5rem;
-        }
-
-        .activity-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .activity-number {
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-
-        .activity-detail {
-            font-size: 0.9rem;
-            color: var(--text-light);
-        }
-
-        .activity-date {
-            font-size: 0.8rem;
-            color: #999;
-            background: #f1f1f1;
-            padding: 0.2rem 0.6rem;
-            border-radius: 12px;
-        }
-
-        .view-all {
-            display: inline-block;
-            margin-top: 1rem;
-            color: var(--secondary-gold);
-            text-decoration: none;
-            font-weight: 500;
-            transition: var(--transition);
-        }
-
-        .view-all:hover {
-            color: var(--text-dark);
-            transform: translateX(5px);
-        }
-
-        /* Footer */
-        .company-info {
-            text-align: center;
-            padding: 2rem;
-            background: var(--text-dark);
-            color: var(--white);
-            margin-top: auto;
-        }
-
-        .company-info h2 {
-            color: var(--primary-gold);
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-        }
-
-        .company-info p {
-            color: #ccc;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .company-info a {
-            color: var(--primary-gold);
-            text-decoration: none;
-        }
-
-        .company-info a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            .landing-content {
-                padding: 1rem;
-            }
-
-            .welcome-section h1 {
-                font-size: 1.5rem;
-            }
-
-            .stat-number {
-                font-size: 2rem;
-            }
-
-            .recent-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <!-- Authentication Navigation -->
-    {% if user.is_authenticated %}
-    <div class="auth-nav">
-        <span class="welcome-text">Welcome, {{ user.username }}</span>
-        <form method="post" action="{% url 'accounts:logout' %}" style="display: inline;">
-            {% csrf_token %}
-            <button type="submit" class="logout-btn">Logout</button>
-        </form>
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-end">
+    <div>
+        <h1 class="page-title h2 mb-1">Innovation Dashboard</h1>
+        <p class="page-subtitle mb-0">Manage your business transactions and view recent activity</p>
     </div>
-    {% endif %}
+    <div class="d-none d-md-block text-end">
+        <div class="small text-muted fw-500 mb-1">SYSTEM STATUS</div>
+        <span class="badge bg-success-soft text-success border border-success border-opacity-25 px-3 py-2"
+            style="background: #f0fdf4; border-radius: 8px;">
+            <i class="bi bi-check-circle-fill me-2"></i>Operational
+        </span>
+    </div>
+</div>
 
-    <div class="landing-content">
-        <!-- Welcome Section -->
-        <div class="welcome-section">
-            <img src="{% static 'images/logo.jpg' %}" alt="LuckyTech Logo" class="logo">
-            <h1>Welcome to LuckyTech Innovation Ground</h1>
-            <h2>Receipt Generator System</h2>
-            <p>Streamline your business transactions with our professional receipt and invoice generation tools.</p>
-        </div>
-
-        <!-- Statistics Dashboard -->
-        <div class="dashboard-stats">
-            <div class="stat-card">
-                <div class="stat-number">{{ total_receipts }}</div>
-                <div class="stat-label">Total Receipts Generated</div>
+<div class="row g-4 mb-5">
+    <!-- Statistics -->
+    <div class="col-md-6">
+        <div class="dashboard-card stat-card">
+            <div class="card-icon-wrapper mb-3">
+                <i class="bi bi-receipt-cutoff"></i>
             </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ total_invoices }}</div>
-                <div class="stat-label">Total Invoices Generated</div>
+            <div class="stat-value">{{ total_receipts }}</div>
+            <div class="stat-label">Official Receipts</div>
+            <div class="mt-3 small text-muted">
+                Total generated to date
             </div>
         </div>
-
-        <!-- Main Actions -->
-        <div class="action-grid">
-            <!-- Official Receipt -->
-            <a href="{% url 'home:official_receipt' %}" class="action-card">
-                <div class="card-header">
-                    <h3>Official Receipt</h3>
-                </div>
-                <div class="card-body">
-                    <span class="btn-icon">🧾</span>
-                    <p>Generate a new official receipt for payments received.</p>
-                    <span class="view-all">Create Receipt →</span>
-                </div>
-            </a>
-
-            <!-- Cash Invoice -->
-            <a href="{% url 'home:cash_invoice' %}" class="action-card">
-                <div class="card-header">
-                    <h3>Cash Sales/Invoice</h3>
-                </div>
-                <div class="card-body">
-                    <span class="btn-icon">💰</span>
-                    <p>Generate a new cash invoice for products sold.</p>
-                    <span class="view-all">Create Invoice →</span>
-                </div>
-            </a>
-
-            <!-- Manage Receipts -->
-            <a href="{% url 'home:receipt_list' %}" class="action-card">
-                <div class="card-header">
-                    <h3>Manage Receipts</h3>
-                </div>
-                <div class="card-body">
-                    <span class="btn-icon">📋</span>
-                    <p>View, search, and manage all generated receipts.</p>
-                    <span class="view-all">View All →</span>
-                </div>
-            </a>
-
-            <!-- Manage Invoices -->
-            <a href="{% url 'home:invoice_list' %}" class="action-card">
-                <div class="card-header">
-                    <h3>Manage Invoices</h3>
-                </div>
-                <div class="card-body">
-                    <span class="btn-icon">📊</span>
-                    <p>View, search, and manage all generated invoices.</p>
-                    <span class="view-all">View All →</span>
-                </div>
-            </a>
+    </div>
+    <div class="col-md-6">
+        <div class="dashboard-card stat-card">
+            <div class="card-icon-wrapper mb-3">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <div class="stat-value">{{ total_invoices }}</div>
+            <div class="stat-label">Cash Invoices</div>
+            <div class="mt-3 small text-muted">
+                Total sales recorded
+            </div>
         </div>
+    </div>
+</div>
 
-        <!-- Recent Activity -->
-        {% if recent_receipts or recent_invoices %}
-        <div class="recent-activity">
-            <h2>Recent Activity</h2>
+<div class="section-heading mb-4 d-flex align-items-center gap-3">
+    <h3 class="h4 fw-700 mb-0">Quick Actions</h3>
+    <div class="flex-grow-1 border-top border-light"></div>
+</div>
 
-            <div class="recent-grid">
-                {% if recent_receipts %}
-                <div class="recent-column">
-                    <h3>Latest Receipts</h3>
-                    <div class="activity-list">
+<div class="row g-4 mb-5">
+    <!-- Action Cards -->
+    <div class="col-xl-3 col-md-6">
+        <a href="{% url 'home:official_receipt' %}" class="dashboard-card p-4">
+            <div class="card-accent"></div>
+            <div class="card-icon-wrapper">
+                <i class="bi bi-plus-circle-fill"></i>
+            </div>
+            <h3 class="h5 fw-700 mb-2">Create Receipt</h3>
+            <p class="small text-muted mb-4">Generate a new official receipt for client payments</p>
+            <div class="mt-auto d-flex align-items-center text-primary-gold fw-600 small">
+                PROCEED <i class="bi bi-chevron-right ms-2 mt-1"></i>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <a href="{% url 'home:cash_invoice' %}" class="dashboard-card p-4">
+            <div class="card-accent"></div>
+            <div class="card-icon-wrapper">
+                <i class="bi bi-cart-plus-fill"></i>
+            </div>
+            <h3 class="h5 fw-700 mb-2">Sales Invoice</h3>
+            <p class="small text-muted mb-4">Record new cash sales and print customer invoices</p>
+            <div class="mt-auto d-flex align-items-center text-primary-gold fw-600 small">
+                PROCEED <i class="bi bi-chevron-right ms-2 mt-1"></i>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <a href="{% url 'home:receipt_list' %}" class="dashboard-card p-4">
+            <div class="card-accent"></div>
+            <div class="card-icon-wrapper">
+                <i class="bi bi-files"></i>
+            </div>
+            <h3 class="h5 fw-700 mb-2">Manage Receipts</h3>
+            <p class="small text-muted mb-4">Search, edit, or reprint existing official receipts</p>
+            <div class="mt-auto d-flex align-items-center text-primary-gold fw-600 small">
+                VIEW RECORDS <i class="bi bi-chevron-right ms-2 mt-1"></i>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <a href="{% url 'home:invoice_list' %}" class="dashboard-card p-4">
+            <div class="card-accent"></div>
+            <div class="card-icon-wrapper">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <h3 class="h5 fw-700 mb-2">Manage Invoices</h3>
+            <p class="small text-muted mb-4">Track sales history and manage all cash invoices</p>
+            <div class="mt-auto d-flex align-items-center text-primary-gold fw-600 small">
+                VIEW RECORDS <i class="bi bi-chevron-right ms-2 mt-1"></i>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="section-heading mb-4 d-flex align-items-center gap-3">
+    <h3 class="h4 fw-700 mb-0">Recent Activity</h3>
+    <div class="flex-grow-1 border-top border-light"></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="dashboard-card p-0">
+            <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                <h4 class="h6 fw-700 mb-0 ms-2">LATEST RECEIPTS</h4>
+                <a href="{% url 'home:receipt_list' %}"
+                    class="btn btn-link btn-sm text-primary-gold text-decoration-none fw-600 p-0">View All</a>
+            </div>
+            {% if recent_receipts %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <tbody class="border-top-0">
                         {% for receipt in recent_receipts %}
-                        <div class="activity-item">
-                            <div class="activity-info">
-                                <span class="activity-number">#{{ receipt.receipt_number }}</span>
-                                <span class="activity-detail">
-                                    {{ receipt.received_from }} - {{ receipt.formatted_amount}}</span>
-                            </div>
-                            <div class="activity-date">{{ receipt.date_created|date:"M d" }}</div>
-                        </div>
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-700 text-dark small">{{ receipt.receipt_number }}</div>
+                                <div class="x-small text-muted" style="font-size: 0.75rem;">
+                                    {{ receipt.date_created|date:"M d, Y" }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="small fw-500">{{ receipt.received_from|truncatechars:20 }}</div>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="fw-700 text-dark small">GH₵{{ receipt.amount|floatformat:2 }}</div>
+                            </td>
+                        </tr>
                         {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if recent_invoices %}
-                <div class="recent-column">
-                    <h3>Latest Invoices</h3>
-                    <div class="activity-list">
-                        {% for invoice in recent_invoices %}
-                        <div class="activity-item">
-                            <div class="activity-info">
-                                <span class="activity-number">#{{ invoice.invoice_number }}</span>
-                                <span class="activity-detail">
-                                    {{ invoice.customer_name }} - {{ invoice.formatted_total }}</span>
-                            </div>
-                            <div class="activity-date">{{ invoice.date_created|date:"M d" }}</div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
+                    </tbody>
+                </table>
             </div>
+            {% else %}
+            <div class="p-5 text-center">
+                <i class="bi bi-folder2-open display-6 text-muted mb-3 d-block"></i>
+                <p class="text-muted small">No recent receipts found</p>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 
-    <!-- Footer -->
-    <div class="company-info">
-        <h2>LuckyTech Innovation Ground</h2>
-        <p>Dealers in Computers, Laptops, Accessories, Research, Repairs. IT support for Offices and Homes, Networking,
-            Apps, Websites, Animations, Robotics, Data Recovery & Tech Innovations.</p>
-        <p>📍 Location: Adjacent Apex Bank-Koforidua | 🌐 <a href="http://www.lig.com.gh"
-                target="_blank">www.lig.com.gh</a></p>
+    <div class="col-lg-6">
+        <div class="dashboard-card p-0">
+            <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                <h4 class="h6 fw-700 mb-0 ms-2">LATEST INVOICES</h4>
+                <a href="{% url 'home:invoice_list' %}"
+                    class="btn btn-link btn-sm text-primary-gold text-decoration-none fw-600 p-0">View All</a>
+            </div>
+            {% if recent_invoices %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <tbody class="border-top-0">
+                        {% for invoice in recent_invoices %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-700 text-dark small">{{ invoice.invoice_number }}</div>
+                                <div class="x-small text-muted" style="font-size: 0.75rem;">
+                                    {{ invoice.date_created|date:"M d, Y" }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="small fw-500">{{ invoice.customer_name|truncatechars:20 }}</div>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="fw-700 text-dark small">GH₵{{ invoice.total_amount|floatformat:2 }}</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-5 text-center">
+                <i class="bi bi-folder2-open display-6 text-muted mb-3 d-block"></i>
+                <p class="text-muted small">No recent invoices found</p>
+            </div>
+            {% endif %}
+        </div>
     </div>
-</body>
+</div>
+{% endblock %}
 
-</html>
+{% block extra_css %}
+<style>
+    .fw-700 {
+        font-weight: 700;
+    }
+
+    .x-small {
+        font-size: 0.75rem;
+    }
+
+    .text-primary-gold {
+        color: var(--primary-gold);
+    }
+
+    .bg-success-soft {
+        background-color: #f0fdf4 !important;
+    }
+</style>
+{% endblock %}

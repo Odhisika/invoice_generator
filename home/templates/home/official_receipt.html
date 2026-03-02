@@ -1,797 +1,357 @@
-{% extends 'home/base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Official Receipt - LuckyTech{% endblock %}
+{% block title %}Issue Official Receipt - LuckyTech Innovation Ground{% endblock %}
 
 {% block content %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+        <h1 class="page-title h2 mb-1">Official Receipt</h1>
+        <p class="page-subtitle mb-0">Fill in the details to generate a professional payment receipt</p>
+    </div>
+    <div class="header-actions">
+        <a href="{% url 'home:receipt_list' %}" class="btn btn-light px-4 border shadow-sm"
+            style="border-radius: 12px;">
+            <i class="bi bi-list-task me-2"></i>Manage Receipts
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Form Section -->
+    <div class="col-lg-5 mb-4">
+        <div class="dashboard-card h-100">
+            <h3 class="h5 fw-700 mb-4 pb-2 border-bottom">
+                <i class="bi bi-pencil-square me-2 text-warning"></i>Receipt Details
+            </h3>
+            <form method="post" class="receipt-form">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label for="received_from" class="form-label fw-600 small">Received From</label>
+                        <input type="text" class="form-control" id="received_from" name="received_from"
+                            placeholder="Full name of recipient" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="date" class="form-label fw-600 small">Date of Payment</label>
+                        <input type="date" class="form-control" id="date" name="date" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="amount" class="form-label fw-600 small">Amount (GH₵)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light fw-700">₵</span>
+                            <input type="number" class="form-control fw-700" id="amount" name="amount" step="0.01"
+                                placeholder="0.00" required>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="ghc" class="form-label fw-600 small">Amount in Words</label>
+                        <input type="text" class="form-control" id="ghc" name="ghc"
+                            placeholder="e.g. One Thousand Ghana Cedis Only" required>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="purpose" class="form-label fw-600 small">Being (Purpose of Payment)</label>
+                        <textarea class="form-control" id="purpose" name="purpose" rows="3"
+                            placeholder="Description of what this payment covers..." required></textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="model_no" class="form-label fw-600 small">Model No.</label>
+                        <input type="text" class="form-control" id="model_no" name="model_no" placeholder="Optional">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="serial_no" class="form-label fw-600 small">Serial No.</label>
+                        <input type="text" class="form-control" id="serial_no" name="serial_no" placeholder="Optional">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="cash_cheque_no" class="form-label fw-600 small">Cash/Cheque No.</label>
+                        <input type="text" class="form-control" id="cash_cheque_no" name="cash_cheque_no"
+                            placeholder="Reference #">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="manager_sign" class="form-label fw-600 small">Manager Name</label>
+                        <input type="text" class="form-control" id="manager_sign" name="manager_sign"
+                            placeholder="For signature area">
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 d-grid gap-2">
+                    <button type="submit" class="btn btn-warning fw-700 py-3"
+                        style="background: var(--primary-gold); border: none; color: var(--charcoal); border-radius: 12px; box-shadow: 0 4px 15px rgba(226, 209, 51, 0.3);">
+                        <i class="bi bi-file-earmark-check-fill me-2"></i>Generate Receipt
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary border-0" style="border-radius: 10px;">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Form
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="col-lg-7">
+        {% if receipt_data %}
+        <div class="dashboard-card p-0 overflow-hidden sticky-top" style="top: 2rem; border-radius: 16px;">
+            <div
+                class="receipt-preview-header p-3 bg-dark text-white d-flex justify-content-between align-items-center">
+                <span class="fw-700"><i class="bi bi-eye me-2"></i>Receipt Preview</span>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-warning btn-sm fw-700 px-3" onclick="window.print();"
+                        style="border-radius: 8px;">
+                        <i class="bi bi-printer me-1"></i>Print
+                    </button>
+                    <button class="btn btn-outline-light btn-sm px-3" onclick="downloadPDF()"
+                        style="border-radius: 8px; border-color: rgba(255,255,255,0.2);">
+                        <i class="bi bi-download me-1"></i>PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Printable Content -->
+            <div class="receipt-document-wrapper bg-light p-4">
+                <div class="receipt-document shadow-sm mx-auto bg-white p-5" id="printable-receipt"
+                    style="max-width: 210mm; min-height: 148mm; position: relative; border: 1px solid #eee;">
+                    <!-- Watermark -->
+                    <div
+                        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); opacity: 0.03; font-size: 8rem; font-weight: 900; pointer-events: none; white-space: nowrap; width: 100%; text-align: center; color: #000;">
+                        LUCKYTECH
+                    </div>
+
+                    <div
+                        class="receipt-top-section d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="{% static 'images/logo.jpg' %}" alt="Logo"
+                                style="width: 80px; height: 80px; border-radius: 12px; object-fit: cover;">
+                            <div>
+                                <h2 class="h4 fw-900 mb-0" style="letter-spacing: 1px; color: var(--charcoal);">
+                                    LUCKYTECH</h2>
+                                <p class="small text-muted mb-0 fw-600">INNOVATION GROUND</p>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="bg-dark text-warning p-2 px-4 rounded-3 d-inline-block mb-2 shadow-sm">
+                                <span class="fw-700 h5 mb-0">OFFICIAL RECEIPT</span>
+                            </div>
+                            <div class="text-muted fw-600 small">#{{ receipt_data.receipt_number|default:"0000000" }}
+                            </div>
+                            <div class="fw-700 text-dark small mt-1">{{ receipt_data.date }}</div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="company-details-mini small text-muted mb-4 pb-3 border-bottom d-flex justify-content-between flex-wrap gap-2">
+                        <span><i class="bi bi-geo-alt-fill text-warning me-1"></i>Koforidua - Adjacent Apex Bank</span>
+                        <span><i class="bi bi-telephone-fill text-warning me-1"></i>0591884422 / 0209522722</span>
+                        <span><i class="bi bi-globe text-warning me-1"></i>www.lig.com.gh</span>
+                    </div>
+
+                    <div class="receipt-body">
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded-3 border-start border-warning border-4 shadow-sm mb-3">
+                                    <div class="small text-muted text-uppercase fw-700 mb-1"
+                                        style="font-size: 0.65rem; letter-spacing: 1px;">Received From</div>
+                                    <div class="h5 fw-700 mb-0 text-dark">{{ receipt_data.received_from }}</div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="p-3 border rounded-3 mb-3">
+                                    <div class="small text-muted text-uppercase fw-700 mb-1"
+                                        style="font-size: 0.65rem; letter-spacing: 1px;">The Sum of</div>
+                                    <div class="fw-600 text-dark italic">"{{ receipt_data.ghc }}"</div>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="p-3 border rounded-3 h-100">
+                                    <div class="small text-muted text-uppercase fw-700 mb-1"
+                                        style="font-size: 0.65rem; letter-spacing: 1px;">Purpose (Being)</div>
+                                    <div class="fw-500 text-dark small">{{ receipt_data.purpose }}</div>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div
+                                    class="p-3 bg-dark rounded-3 h-100 d-flex flex-column justify-content-center text-center shadow-sm">
+                                    <div class="text-warning small text-uppercase fw-700 mb-1"
+                                        style="font-size: 0.65rem; letter-spacing: 1px;">Total Amount Paid</div>
+                                    <div class="h3 fw-900 text-white mb-0">₵{{ receipt_data.amount|floatformat:2 }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <div class="row g-3">
+                                    <div class="col-4">
+                                        <div class="small text-muted fw-700 mb-1">Model No:</div>
+                                        <div class="fw-600 border-bottom pb-1 small">
+                                            {{ receipt_data.model_no|default:"---" }}</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="small text-muted fw-700 mb-1">Serial No:</div>
+                                        <div class="fw-600 border-bottom pb-1 small">
+                                            {{ receipt_data.serial_no|default:"---" }}</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="small text-muted fw-700 mb-1">Ref/Cash #:</div>
+                                        <div class="fw-600 border-bottom pb-1 small">
+                                            {{ receipt_data.cash_cheque_no|default:"---" }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="receipt-signature mt-5 pt-4 d-flex justify-content-between align-items-end">
+                        <div class="text-center" style="width: 150px;">
+                            <div class="small text-muted mb-2 fw-700">Recipient Sign</div>
+                            <div style="height: 30px; border-bottom: 1px solid #dee2e6;"></div>
+                        </div>
+                        <div class="text-center" style="width: 200px;">
+                            <div class="small text-muted mb-2 fw-700">
+                                Manager: {{ receipt_data.manager_sign|default:"LUCKYTECH" }}</div>
+                            <div style="height: 30px; border-bottom: 2px solid var(--charcoal); position: relative;">
+                                <div
+                                    style="position: absolute; bottom: 5px; right: 20px; font-family: 'Brush Script MT', cursive; font-size: 1.5rem; opacity: 0.5; color: var(--charcoal);">
+                                    LuckyTech
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="receipt-footer-text text-center text-muted x-small mt-5 pt-3">
+                        Computer & IT Experts | Networking | Web Dev | Training | Innovative Products
+                        <br>
+                        <span class="fw-700">Merchant ID # 972913 | Professional Service Guaranteed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div
+            class="dashboard-card h-100 d-flex flex-column justify-content-center align-items-center py-5 text-center bg-light border-0">
+            <div class="card-icon-wrapper mb-4 opacity-50"
+                style="width: 100px; height: 100px; font-size: 3rem; background: rgba(0,0,0,0.05); border: none; color: #aaa;">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+            <h4 class="fw-700 text-muted">Awaiting Input</h4>
+            <p class="text-muted small mx-auto" style="max-width: 250px;">Fill out the form on the left to see a live
+                preview of the receipt document.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
 <style>
-    .page-container {
-        max-width: 1200px;
-        margin: 0 auto;
+    .fw-900 {
+        font-weight: 900;
     }
 
-    /* Form Container */
-    .form-container {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        overflow: hidden;
-        margin-bottom: 30px;
+    .fw-700 {
+        font-weight: 700;
     }
 
-    .form-header {
-        background: linear-gradient(135deg, #aa9209 0%, #ad9d08 100%);
-        color: white;
-        padding: 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 20px;
-    }
-
-    .form-header h2 {
-        font-size: 2rem;
-        font-weight: bold;
-        letter-spacing: 1px;
-    }
-
-    .back-btn {
-        background: linear-gradient(135deg, #95a5a6, #7f8c8d);
-        color: white;
-        padding: 12px 24px;
-        border-radius: 8px;
-        text-decoration: none;
+    .fw-600 {
         font-weight: 600;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
     }
 
-    .back-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    .fw-500 {
+        font-weight: 500;
     }
 
-    /* Form Styling */
-    .receipt-form {
-        padding: 40px;
+    .x-small {
+        font-size: 0.7rem;
     }
 
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 30px;
-        margin-bottom: 30px;
-    }
-
-    .form-group {
-        margin-bottom: 25px;
-    }
-
-    .form-group.full-width {
-        grid-column: 1 / -1;
-    }
-
-    .form-group label {
-        display: block;
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 8px;
-        font-size: 1rem;
-    }
-
-    .form-group input,
-    .form-group textarea {
-        width: 100%;
-        padding: 15px;
-        border: 2px solid #e9ecef;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-family: inherit;
-        transition: all 0.3s ease;
-        background: #f8f9fa;
-    }
-
-    .form-group input:focus,
-    .form-group textarea:focus {
-        outline: none;
-        border-color: #3498db;
-        background: white;
-        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-    }
-
-    .form-group textarea {
-        resize: vertical;
-        min-height: 80px;
-    }
-
-    .currency-info {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 8px;
-        font-size: 0.9rem;
-        color: #7f8c8d;
+    .italic {
         font-style: italic;
     }
 
-    /* Button Group */
-    .button-group {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        padding-top: 30px;
-        border-top: 2px solid #ecf0f1;
-        margin-top: 30px;
-        flex-wrap: wrap;
-    }
-
-    .btn {
-        padding: 15px 30px;
-        border: none;
-        border-radius: 8px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 150px;
-        justify-content: center;
-        text-decoration: none;
-    }
-
-    .submit-btn {
-        background: linear-gradient(135deg, #27ae60, #2ecc71);
-        color: white;
-    }
-
-    .reset-btn {
-        background: linear-gradient(135deg, #e74c3c, #c0392b);
-        color: white;
-    }
-
-    .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    }
-
-    /* Receipt Preview - UPDATED TO MATCH DETAILED RECEIPT */
-    .receipt-preview {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        overflow: hidden;
-        animation: slideUp 0.5s ease;
-        max-width: 900px;
-        margin: 0 auto;
-    }
-
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .receipt-header {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        color: white;
-        padding: 25px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .receipt-header h3 {
-        font-size: 1.8rem;
-        font-weight: bold;
-    }
-
-    .receipt-actions {
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-    }
-
-    .print-btn {
-        background: linear-gradient(135deg, #007bff, #0056b3);
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .download-btn {
-        background: linear-gradient(135deg, #3498db, #2980b9);
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    /* EXACT RECEIPT STYLING FROM DETAILED TEMPLATE */
-    .receipt {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        overflow: hidden;
-        border: 1px solid #e9ecef;
-    }
-
-    .receipt-top {
-        background: #f8f9fa;
-        border-bottom: 2px solid #dee2e6;
-        padding: 30px;
-        display: flex;
-        align-items: flex-start;
-        gap: 30px;
-    }
-
-    .logo {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        min-width: 200px;
-    }
-
-    .logo-image {
-        width: 70px;
-        height: 70px;
-        border-radius: 6px;
-        object-fit: cover;
-        border: 2px solid #dee2e6;
-    }
-
-    .logo-full {
-        font-size: 1.2rem;
-        font-weight: 700;
+    .receipt-document {
+        font-family: 'Inter', sans-serif;
         color: #333;
-        line-height: 1.2;
+        line-height: 1.4;
     }
 
-    .receipt-company-info {
-        flex: 1;
-    }
-
-    .receipt-company-info p {
-        margin-bottom: 15px;
-        font-size: 14px;
-        line-height: 1.5;
-        color: #555;
-    }
-
-    .receipt-contact {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        margin-bottom: 8px;
-        font-size: 13px;
-        color: #666;
-    }
-
-    .receipt-number {
-        background: #cc9706;
-        color: white;
-        padding: 20px 30px;
-        text-align: center;
-        font-weight: 600;
-    }
-
-    .receipt-number div:first-child {
-        font-size: 1.1rem;
-        margin-bottom: 5px;
-    }
-
-    .receipt-title {
-        font-size: 1.4rem;
-        font-weight: 700;
-        letter-spacing: 2px;
-    }
-
-    .receipt-content {
-        padding: 30px;
-    }
-
-    .receipt-field {
-        display: flex;
-        margin-bottom: 15px;
-        padding: 12px 0;
-        border-bottom: 1px solid #f1f3f4;
-    }
-
-    .receipt-field:last-child {
-        border-bottom: none;
-    }
-
-    .field-label {
-        font-weight: 600;
-        color: #495057;
-        min-width: 150px;
-        display: flex;
-        align-items: center;
-    }
-
-    .field-value {
-        flex: 1;
-        color: #333;
-    }
-
-    .receipt-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 30px;
-        margin-bottom: 15px;
-    }
-
-    .receipt-field.half {
-        margin-bottom: 0;
-    }
-
-    .receipt-currency {
-        display: flex;
-        justify-content: space-between;
-        background: #f8f9fa;
-        padding: 12px 20px;
-        border-radius: 4px;
-        margin: 15px 0;
-        font-weight: 600;
-        color: #495057;
-        border: 1px solid #dee2e6;
-    }
-
-    .receipt-footer {
-        background: #f8f9fa;
-        padding: 20px 30px;
-        border-top: 1px solid #dee2e6;
-    }
-
-    .merchant-info {
-        display: flex;
-        justify-content: space-between;
-        font-size: 14px;
-        color: #666;
-        font-weight: 500;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .form-header {
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .form-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .button-group {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .btn {
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .receipt-actions {
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .receipt-header {
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .receipt-top {
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .logo {
-            justify-content: center;
-            min-width: auto;
-        }
-
-        .receipt-row {
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-
-        .receipt-contact {
-            justify-content: center;
-        }
-
-        .merchant-info {
-            flex-direction: column;
-            gap: 8px;
-            text-align: center;
-        }
-    }
-
-    /* Print Styles */
     @media print {
         @page {
             margin: 0;
-            size: auto;
         }
 
+        /* Hide UI elements */
+        .navbar,
+        footer,
+        .page-header,
+        .receipt-preview-header,
+        .header-actions,
+        .col-lg-5,
+        .btn {
+            display: none !important;
+        }
+
+        /* Reset layout for print */
         body {
             background: white !important;
             margin: 0 !important;
             padding: 0 !important;
-            font-size: 12px !important;
-            line-height: 1.3 !important;
         }
 
-        .form-container {
-            display: none !important;
-        }
-        
-        .receipt-preview {
-            box-shadow: none !important;
-            border-radius: 0 !important;
+        .dashboard-wrapper,
+        .container-fluid,
+        .row,
+        .col-lg-7 {
+            padding: 0 !important;
             margin: 0 !important;
+            width: 100% !important;
             max-width: none !important;
         }
-        
-        .receipt-header {
-            display: none !important;
-        }
 
-        .receipt {
-            box-shadow: none !important;
-            border-radius: 0 !important;
-            margin: 0 !important;
+        .dashboard-card {
             border: none !important;
-            page-break-inside: avoid !important;
+            box-shadow: none !important;
+            background: transparent !important;
         }
 
-        .receipt-top {
+        .receipt-document-wrapper {
+            padding: 0 !important;
+            background: transparent !important;
+        }
+
+        #printable-receipt {
+            position: static !important;
+            margin: 0 !important;
             padding: 20px !important;
-            gap: 20px !important;
-            text-align: center !important;
-            flex-direction: column !important;
-        }
-
-        .logo {
-            gap: 15px !important;
-            min-width: auto !important;
-            justify-content: center !important;
-            align-items: center !important;
-        }
-
-        .logo-image {
-            width: 60px !important;
-            height: 60px !important;
-        }
-
-        .logo-full {
-            font-size: 1.1rem !important;
-            line-height: 1.1 !important;
-            text-align: center !important;
-        }
-
-        .receipt-company-info {
-            text-align: center !important;
-        }
-
-        .receipt-company-info p {
-            font-size: 12px !important;
-            margin-bottom: 10px !important;
-            line-height: 1.3 !important;
-            text-align: center !important;
-        }
-
-        .receipt-contact {
-            font-size: 11px !important;
-            gap: 10px !important;
-            margin-bottom: 8px !important;
-            justify-content: center !important;
-            flex-wrap: wrap !important;
-        }
-
-        .receipt-number {
-            padding: 15px 20px !important;
-        }
-
-        .receipt-number div:first-child {
-            font-size: 1rem !important;
-            margin-bottom: 5px !important;
-        }
-
-        .receipt-title {
-            font-size: 1.3rem !important;
-            letter-spacing: 1px !important;
-        }
-
-        .receipt-content {
-            padding: 25px !important;
-        }
-
-        .receipt-field {
-            margin-bottom: 10px !important;
-            padding: 8px 0 !important;
-            font-size: 12px !important;
-        }
-
-        .field-label {
-            min-width: 130px !important;
-            font-size: 12px !important;
-        }
-
-        .field-value {
-            font-size: 12px !important;
-        }
-
-        .receipt-row {
-            gap: 25px !important;
-            margin-bottom: 10px !important;
-        }
-
-        .receipt-currency {
-            padding: 10px 15px !important;
-            margin: 10px 0 !important;
-            font-size: 12px !important;
-        }
-
-        .receipt-footer {
-            padding: 15px 20px !important;
-        }
-
-        .merchant-info {
-            font-size: 12px !important;
-            flex-direction: row !important;
-            justify-content: space-between !important;
+            width: 100% !important;
+            border: none !important;
+            box-shadow: none !important;
         }
     }
 </style>
 
-<div class="page-container">
-    <div class="form-container">
-        <div class="form-header">
-            <h2><i class="fas fa-receipt"></i> Generate Official Receipt</h2>
-            <a href="{% url 'home:index' %}" class="back-btn">
-                <i class="fas fa-home"></i>
-                Back to Home
-            </a>
-        </div>
-        
-        <form method="post" class="receipt-form">
-            {% csrf_token %}
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="date"><i class="fas fa-calendar"></i> Date:</label>
-                    <input type="date" id="date" name="date" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="received_from"><i class="fas fa-user"></i> Received from:</label>
-                    <input type="text" id="received_from" name="received_from" placeholder="Customer name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="amount"><i class="fas fa-money-bill"></i> The Sum of(Amount in Words):</label>
-                    <input type="text" id="ghc" name="ghc" placeholder="e.g., One Thousand Ghana Cedis"  required>
-
-                    
-                </div>
-
-                
-                
-                <div class="form-group">
-                    <label for="ghc"><i class="fas fa-calculator"></i> GHC:</label>
-                    <input type="number" id="amount" name="amount" step="0.01" placeholder="0.00" required>
-                    <div class="currency-info">
-                        <span>Ghana Cedis</span>
-                        <span>Pesewas</span>
-                    </div>
-                </div>
-                
-                <div class="form-group full-width">
-                    <label for="purpose"><i class="fas fa-clipboard"></i> Being:</label>
-                    <textarea id="purpose" name="purpose" rows="3" placeholder="Description of payment purpose" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="model_no"><i class="fas fa-tag"></i> Model No.:</label>
-                    <input type="text" id="model_no" name="model_no" placeholder="Product model number">
-                </div>
-                
-                <div class="form-group">
-                    <label for="serial_no"><i class="fas fa-barcode"></i> Serial No.:</label>
-                    <input type="text" id="serial_no" name="serial_no" placeholder="Product serial number">
-                </div>
-                
-                <div class="form-group">
-                    <label for="cash_cheque_no"><i class="fas fa-money-check"></i> CASH/CHEQUE NO.:</label>
-                    <input type="text" id="cash_cheque_no" name="cash_cheque_no" placeholder="CASH or cheque number">
-                </div>
-                
-                <div class="form-group">
-                    <label for="manager_sign"><i class="fas fa-signature"></i> Manager's sign.:</label>
-                    <input type="text" id="manager_sign" name="manager_sign" placeholder="Manager name or signature">
-                </div>
-            </div>
-            
-            <div class="button-group">
-                <button type="submit" class="btn submit-btn">
-                    <i class="fas fa-receipt"></i>
-                    Generate Receipt
-                </button>
-                <button type="reset" class="btn reset-btn">
-                    <i class="fas fa-redo"></i>
-                    Reset
-                </button>
-            </div>
-        </form>
-    </div>
-    
-    {% if receipt_data %}
-    <div class="receipt-preview">
-        <div class="receipt-header">
-            <h3><i class="fas fa-file-invoice"></i> Receipt Preview</h3>
-            <div class="receipt-actions">
-                <button class="print-btn" onclick="window.print();">
-                    <i class="fas fa-print"></i>
-                    Print Receipt
-                </button>
-                <button class="download-btn" onclick="downloadPDF()">
-                    <i class="fas fa-download"></i>
-                    Download PDF
-                </button>
-            </div>
-        </div>
-        
-        <div class="receipt official-receipt" id="printable-receipt">
-            <div class="receipt-top">
-                <div class="logo">
-                    <img src="{% static 'images/logo.jpg' %}" alt="LuckyTech Logo" class="logo-image">
-                    <div class="logo-full">
-                        <div>LUCKYTECH</div>
-                        <div>INNOVATION</div>
-                        <div>GROUND</div>
-                    </div>
-                </div>
-                <div class="receipt-company-info">
-                    <p>Dealers; Computers, Laptops, Accessories, Research, Repairs. IT support for offices and Homes, Networking, Apps, Websites, Animations, Robotics, Data Recovery & engaging in Tech innovative products.</p>
-                    <div class="receipt-contact">
-                        <span>📞 0591884422</span>
-                        <span>📱 0209522722</span>
-                        <span>All social Handles:</span>
-                        <span>🐦 ⭕ 📘 🎵</span>
-                        <span>Lig4gh</span>
-                    </div>
-                    <div class="receipt-contact">
-                        <span>Email: info@lig.com.gh</span>
-                        <span>Website: www.lig.com.gh</span>
-                        <span>Loc: Adjacent Apex Bank-Koforidua</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="receipt-number">
-                <div>No. 0000307</div>
-                <div class="receipt-title">OFFICIAL RECEIPT</div>
-            </div>
-            
-            <div class="receipt-content">
-                <div class="receipt-field">
-                    <span class="field-label">Date:</span>
-                    <span class="field-value">{{ receipt_data.date }}</span>
-                </div>
-                
-                <div class="receipt-field">
-                    <span class="field-label">Received from:</span>
-                    <span class="field-value">{{ receipt_data.received_from }}</span>
-                </div>
-                
-                <div class="receipt-field">
-                    <span class="field-label">The Sum of:</span>
-                    <span class="field-value">{{ receipt_data.ghc|default:"" }}</span>
-                    
-                </div>
-                
-                <div class="receipt-row">
-                    <div class="receipt-field half">
-                        <span class="field-label">GHC:</span>
-                        <span class="field-value">{{ receipt_data.amount }}</span>
-                    </div>
-                    <div class="receipt-currency">
-                        <span>Ghana Cedis</span>
-                        <span>Pesewas</span>
-                    </div>
-                </div>
-            
-                <div class="receipt-field">
-                    <span class="field-label">Being:</span>
-                    <span class="field-value">{{ receipt_data.purpose }}</span>
-                </div>
-                
-                {% if receipt_data.model_no %}
-                <div class="receipt-field">
-                    <span class="field-label">Model No.:</span>
-                    <span class="field-value">{{ receipt_data.model_no }}</span>
-                </div>
-                {% endif %}
-                
-                <div class="receipt-row">
-                    <div class="receipt-field half">
-                        <span class="field-label">CASH/CHEQUE NO.:</span>
-                        <span class="field-value">{{ receipt_data.cash_cheque_no|default:"" }}</span>
-                    </div>
-                    
-                    <div class="receipt-field half">
-                        <span class="field-label">Serial No.:</span>
-                        <span class="field-value">{{ receipt_data.serial_no|default:"" }}</span>
-                    </div>
-                </div>
-                
-                <div class="receipt-field">
-                    <span class="field-label">Manager's sign.:</span>
-                    <span class="field-value">{{ receipt_data.manager_sign|default:"" }}</span>
-                </div>
-            </div>
-            
-            <div class="receipt-footer">
-                <div class="merchant-info">
-                    <span>Merchant ID # 972913</span>
-                    <span>Name: LuckyTech Innovation Ground</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        function downloadPDF() {
-            const element = document.getElementById('printable-receipt');
-            
-            const opt = {
-                margin: 10,
-                filename: 'LuckyTech_Receipt_' + new Date().getTime() + '.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2,
-                    logging: true,
-                    useCORS: true,
-                    allowTaint: true
-                },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(element).save();
-        }
-    </script>
-    {% endif %}
-</div>
-
+<script>
+    function downloadPDF() {
+        const element = document.getElementById('printable-receipt');
+        const opt = {
+            margin: 10,
+            filename: 'LuckyTech_Receipt_{{ receipt_data.receipt_number }}.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 3, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
+    }
+</script>
 {% endblock %}

@@ -1,48 +1,46 @@
-
 {% extends 'accounts/base.html' %}
 
 {% block title %}Login - LuckyTech Receipt Generator{% endblock %}
 
 {% block content %}
-<h4 class="text-center mb-4 text-dark">Welcome Back</h4>
+<div class="text-center mb-5">
+    <h1 class="h3 fw-bold text-white mb-2">Welcome Back</h1>
+    <p class="text-white-50 small">Enter your details to access your account</p>
+</div>
 
 {% if form.errors %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Login failed!</strong> Please check your username and password.
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+<div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <span>Invalid username or password.</span>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
 {% endif %}
 
-<form method="post">
+<form method="post" autocomplete="off">
     {% csrf_token %}
-    <div class="mb-3">
+    <div class="mb-4">
         <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-        <input type="text" class="form-control" name="{{ form.username.name }}" 
-               id="{{ form.username.id_for_label }}" required 
-               placeholder="Enter your username">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-person text-white-50"></i></span>
+            <input type="text" class="form-control" name="{{ form.username.name }}"
+                id="{{ form.username.id_for_label }}" required placeholder="Enter your username">
+        </div>
     </div>
     <div class="mb-4">
-        <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
-        <input type="password" class="form-control" name="{{ form.password.name }}" 
-               id="{{ form.password.id_for_label }}" required 
-               placeholder="Enter your password">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <label for="{{ form.password.id_for_label }}" class="form-label mb-0">Password</label>
+            <a href="{% url 'accounts:password_reset' %}" class="small text-decoration-none">
+                Forgot?
+            </a>
+        </div>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock text-white-50"></i></span>
+            <input type="password" class="form-control" name="{{ form.password.name }}"
+                id="{{ form.password.id_for_label }}" required placeholder="Enter your password">
+        </div>
     </div>
-    <div class="d-grid mb-3">
+    <div class="d-grid mt-5">
         <button type="submit" class="btn btn-primary">Sign In</button>
     </div>
 </form>
-
-<div class="text-center">
-    <a href="{% url 'accounts:password_reset' %}" class="text-decoration-none" 
-       style="color: #667eea;">
-        Forgot your password?
-    </a>
-</div>
 {% endblock %}
-
-
-
-
-
-
-
