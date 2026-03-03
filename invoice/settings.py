@@ -85,9 +85,9 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'invoicedb',
-        'USER': 'postgres',
-        'PASSWORD': 'osikani',
+        'NAME': '--',
+        'USER': '----',
+        'PASSWORD': '[PASSWORD]',
         'HOST': 'localhost',
         'PORT': '5432',
     }
