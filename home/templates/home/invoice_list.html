@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static humanize %}
 
 {% block title %}Manage Invoices - LuckyTech Innovation Ground{% endblock %}
 
@@ -69,7 +69,7 @@
                         </span>
                     </td>
                     <td>
-                        <div class="fw-700 text-dark">GH₵{{ invoice.total_amount|floatformat:2 }}</div>
+                        <div class="fw-700 text-dark">GH₵{{ invoice.total_amount|floatformat:2|intcomma }}</div>
                     </td>
                     <td class="text-end pe-4">
                         <div class="d-flex justify-content-end gap-2">

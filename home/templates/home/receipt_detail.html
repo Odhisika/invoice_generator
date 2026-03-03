@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static humanize %}
 
 {% block title %}Receipt #{{ receipt.receipt_number }} - LuckyTech Innovation Ground{% endblock %}
 
@@ -98,92 +98,94 @@
                                     class="p-3 bg-dark rounded-3 h-100 d-flex flex-column justify-content-center text-center shadow-sm">
                                     <div class="text-warning small text-uppercase fw-700 mb-1"
                                         style="font-size: 0.65rem; letter-spacing: 1px;">Total Amount Paid</div>
-                                    <div class="h3 fw-900 text-white mb-0">₵{{ receipt.formatted_amount }}</div>
-                                </div>
-                            </div>
-
-                            <div class="col-12 mt-4">
-                                <div class="row g-3">
-                                    <div class="col-4">
-                                        <div class="small text-muted fw-700 mb-1">Model No:</div>
-                                        <div class="fw-600 border-bottom pb-1 small">
-                                            {{ receipt.model_no|default:"---" }}
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="small text-muted fw-700 mb-1">Serial No:</div>
-                                        <div class="fw-600 border-bottom pb-1 small">
-                                            {{ receipt.serial_no|default:"---" }}
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="small text-muted fw-700 mb-1">Ref/Cash #:</div>
-                                        <div class="fw-600 border-bottom pb-1 small">
-                                            {{ receipt.cash_cheque_no|default:"---" }}
-                                        </div>
+                                    <div class="h3 fw-900 text-white mb-0">₵{{ receipt.amount|floatformat:2|intcomma }}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="receipt-signature mt-5 pt-4 d-flex justify-content-between align-items-end">
-                        <div class="text-center" style="width: 150px;">
-                            <div class="small text-muted mb-2 fw-700">Recipient Sign</div>
-                            <div style="height: 30px; border-bottom: 1px solid #dee2e6;"></div>
-                        </div>
-                        <div class="text-center" style="width: 200px;">
-                            <div class="small text-muted mb-2 fw-700">
-                                Manager: {{ receipt.manager_sign|default:"LUCKYTECH" }}
-                            </div>
-                            <div style="height: 30px; border-bottom: 2px solid var(--charcoal); position: relative;">
-                                <div
-                                    style="position: absolute; bottom: 5px; right: 20px; font-family: 'Brush Script MT', cursive; font-size: 1.5rem; opacity: 0.5; color: var(--charcoal);">
-                                    LuckyTech
+                        <div class="col-12 mt-4">
+                            <div class="row g-3">
+                                <div class="col-4">
+                                    <div class="small text-muted fw-700 mb-1">Model No:</div>
+                                    <div class="fw-600 border-bottom pb-1 small">
+                                        {{ receipt.model_no|default:"---" }}
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="small text-muted fw-700 mb-1">Serial No:</div>
+                                    <div class="fw-600 border-bottom pb-1 small">
+                                        {{ receipt.serial_no|default:"---" }}
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="small text-muted fw-700 mb-1">Ref/Cash #:</div>
+                                    <div class="fw-600 border-bottom pb-1 small">
+                                        {{ receipt.cash_cheque_no|default:"---" }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="receipt-footer-text text-center text-muted x-small mt-5 pt-3">
-                        Computer & IT Experts | Networking | Web Dev | Training | Innovative Products
-                        <br>
-                        <span class="fw-700">Merchant ID # 972913 | Professional Service Guaranteed</span>
+                <div class="receipt-signature mt-5 pt-4 d-flex justify-content-between align-items-end">
+                    <div class="text-center" style="width: 150px;">
+                        <div class="small text-muted mb-2 fw-700">Recipient Sign</div>
+                        <div style="height: 30px; border-bottom: 1px solid #dee2e6;"></div>
                     </div>
+                    <div class="text-center" style="width: 200px;">
+                        <div class="small text-muted mb-2 fw-700">
+                            Manager: {{ receipt.manager_sign|default:"LUCKYTECH" }}
+                        </div>
+                        <div style="height: 30px; border-bottom: 2px solid var(--charcoal); position: relative;">
+                            <div
+                                style="position: absolute; bottom: 5px; right: 20px; font-family: 'Brush Script MT', cursive; font-size: 1.5rem; opacity: 0.5; color: var(--charcoal);">
+                                LuckyTech
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="receipt-footer-text text-center text-muted x-small mt-5 pt-3">
+                    Computer & IT Experts | Networking | Web Dev | Training | Innovative Products
+                    <br>
+                    <span class="fw-700">Merchant ID # 972913 | Professional Service Guaranteed</span>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Metadata Panel -->
-    <div class="col-lg-4">
-        <div class="dashboard-card mb-4">
-            <h3 class="h6 fw-700 mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Information</h3>
-            <ul class="list-unstyled mb-0">
-                <li class="d-flex justify-content-between mb-3 border-bottom pb-2">
-                    <span class="small text-muted">Created On</span>
-                    <span class="small fw-700">{{ receipt.date_created|date:"M d, Y H:i" }}</span>
-                </li>
-                <li class="d-flex justify-content-between mb-3 border-bottom pb-2">
-                    <span class="small text-muted">Generated By</span>
-                    <span class="small fw-700">{{ receipt.created_by|default:"System Admin" }}</span>
-                </li>
-                <li class="d-flex justify-content-between mb-3">
-                    <span class="small text-muted">Status</span>
-                    <span class="badge bg-success-soft text-success px-3">RECORDED</span>
-                </li>
-            </ul>
-        </div>
-
-        <div class="dashboard-card text-center py-4 bg-light border-0">
-            <div class="mb-3 text-muted">
-                <i class="bi bi-info-circle display-6 opacity-25"></i>
-            </div>
-            <p class="small text-muted px-3">
-                This is a secure payment record generated by LuckyTech's internal invoice system.
-            </p>
-        </div>
+<!-- Metadata Panel -->
+<div class="col-lg-4">
+    <div class="dashboard-card mb-4">
+        <h3 class="h6 fw-700 mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Information</h3>
+        <ul class="list-unstyled mb-0">
+            <li class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                <span class="small text-muted">Created On</span>
+                <span class="small fw-700">{{ receipt.date_created|date:"M d, Y H:i" }}</span>
+            </li>
+            <li class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                <span class="small text-muted">Generated By</span>
+                <span class="small fw-700">{{ receipt.created_by|default:"System Admin" }}</span>
+            </li>
+            <li class="d-flex justify-content-between mb-3">
+                <span class="small text-muted">Status</span>
+                <span class="badge bg-success-soft text-success px-3">RECORDED</span>
+            </li>
+        </ul>
     </div>
+
+    <div class="dashboard-card text-center py-4 bg-light border-0">
+        <div class="mb-3 text-muted">
+            <i class="bi bi-info-circle display-6 opacity-25"></i>
+        </div>
+        <p class="small text-muted px-3">
+            This is a secure payment record generated by LuckyTech's internal invoice system.
+        </p>
+    </div>
+</div>
 </div>
 {% endblock %}
 

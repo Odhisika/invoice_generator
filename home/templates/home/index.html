@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static humanize %}
 
 {% block title %}Dashboard - LuckyTech Innovation Ground{% endblock %}
 
@@ -178,7 +178,8 @@
                                 <div class="small fw-500">{{ invoice.customer_name|truncatechars:20 }}</div>
                             </td>
                             <td class="text-end pe-4">
-                                <div class="fw-700 text-dark small">GH₵{{ invoice.total_amount|floatformat:2 }}</div>
+                                <div class="fw-700 text-dark small">GH₵{{ invoice.total_amount|floatformat:2|intcomma }}
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}

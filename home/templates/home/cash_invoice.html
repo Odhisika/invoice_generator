@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static humanize %}
 
 {% block title %}Issue Cash Sales/Invoice - LuckyTech Innovation Ground{% endblock %}
 
@@ -293,8 +293,9 @@
                                 <tr style="font-size: 0.85rem;">
                                     <td class="ps-3 py-2 fw-600 border-bottom">{{ product.desc }}</td>
                                     <td class="text-center py-2 border-bottom">{{ product.qty }}</td>
-                                    <td class="text-end py-2 border-bottom">₵{{ product.price }}</td>
-                                    <td class="text-end pe-3 py-2 fw-700 border-bottom">₵{{ product.total }}</td>
+                                    <td class="text-end py-2 border-bottom">₵{{ product.price|intcomma }}</td>
+                                    <td class="text-end pe-3 py-2 fw-700 border-bottom">₵{{ product.total|intcomma }}
+                                    </td>
                                 </tr>
                                 {% endfor %}
 
@@ -307,8 +308,9 @@
                                 <tr style="font-size: 0.85rem;">
                                     <td class="ps-3 py-2 border-bottom text-muted">{{ item.desc }}</td>
                                     <td class="text-center py-2 border-bottom text-muted">{{ item.qty }}</td>
-                                    <td class="text-end py-2 border-bottom text-muted">₵{{ item.price }}</td>
-                                    <td class="text-end pe-3 py-2 fw-700 border-bottom text-muted">₵{{ item.total }}
+                                    <td class="text-end py-2 border-bottom text-muted">₵{{ item.price|intcomma }}</td>
+                                    <td class="text-end pe-3 py-2 fw-700 border-bottom text-muted">₵{{
+                                        item.total|intcomma }}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -334,23 +336,23 @@
                             <div class="text-end">
                                 <div class="d-flex justify-content-between mb-2 small px-2">
                                     <span class="text-muted fw-600">Subtotal (Taxable):</span>
-                                    <span class="fw-700 text-dark">₵{{ invoice_data.subtotal_amount }}</span>
+                                    <span class="fw-700 text-dark">₵{{ invoice_data.subtotal_amount|intcomma }}</span>
                                 </div>
                                 {% if invoice_data.vat_applicable %}
                                 <div class="d-flex justify-content-between mb-2 small px-2 text-primary">
                                     <span class="fw-700">VAT ({{ invoice_data.vat_percentage }}%):</span>
-                                    <span class="fw-700">₵{{ invoice_data.vat_amount }}</span>
+                                    <span class="fw-700">₵{{ invoice_data.vat_amount|intcomma }}</span>
                                 </div>
                                 {% endif %}
                                 {% if invoice_data.nontax_total and invoice_data.nontax_total > 0 %}
                                 <div class="d-flex justify-content-between mb-3 small px-2">
                                     <span class="text-muted fw-600">Non-Tax Total:</span>
-                                    <span class="fw-700 text-dark">₵{{ invoice_data.nontax_total }}</span>
+                                    <span class="fw-700 text-dark">₵{{ invoice_data.nontax_total|intcomma }}</span>
                                 </div>
                                 {% endif %}
                                 <div class="d-flex justify-content-between bg-dark text-warning rounded-3 p-3 shadow">
                                     <span class="fw-900">GRAND TOTAL:</span>
-                                    <span class="h5 fw-900 mb-0">GH₵ {{ invoice_data.total_amount }}</span>
+                                    <span class="h5 fw-900 mb-0">GH₵ {{ invoice_data.total_amount|intcomma }}</span>
                                 </div>
                             </div>
                         </div>

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static humanize %}
 
 {% block title %}Manage Receipts - LuckyTech Innovation Ground{% endblock %}
 
@@ -67,7 +67,7 @@
                         <div class="text-muted small">{{ receipt.purpose|truncatechars:45 }}</div>
                     </td>
                     <td>
-                        <div class="fw-700 text-success">GH₵{{ receipt.amount|floatformat:2 }}</div>
+                        <div class="fw-700 text-success">GH₵{{ receipt.amount|floatformat:2|intcomma }}</div>
                     </td>
                     <td class="text-end pe-4">
                         <div class="d-flex justify-content-end gap-2">
