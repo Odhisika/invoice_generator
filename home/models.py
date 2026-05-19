@@ -55,9 +55,15 @@ from django.utils import timezone
 from decimal import Decimal
 
 class CashInvoice(models.Model):
+    STATUS_CHOICES = [
+        ('DRAFT', 'Draft'),
+        ('FINAL', 'Final/Published'),
+    ]
+
     # Invoice identification
     invoice_number = models.CharField(max_length=20, unique=True, editable=False)
     date_created = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='FINAL')
     
     # Customer details
     customer_name = models.CharField(max_length=255)

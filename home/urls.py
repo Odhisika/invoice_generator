@@ -15,6 +15,7 @@ urlpatterns = [
     # Detail views
     path('receipts/<int:receipt_id>/', login_required(views.receipt_detail), name='receipt_detail'),
     path('invoices/<int:invoice_id>/', login_required(views.invoice_detail), name='invoice_detail'),
+    path('invoices/<int:invoice_id>/edit/', login_required(views.edit_invoice), name='edit_invoice'),
     
     # Delete views
     path('receipts/<int:receipt_id>/delete/', login_required(views.delete_receipt), name='delete_receipt'),

@@ -13,11 +13,11 @@ from django.views.decorators.http import require_POST
 def index(request):
     # Get recent receipts and invoices for dashboard
     recent_receipts = OfficialReceipt.objects.all()[:5]
-    recent_invoices = CashInvoice.objects.all()[:5]
+    recent_invoices = CashInvoice.objects.filter(status='FINAL')[:5]
     
     # Get some statistics
     total_receipts = OfficialReceipt.objects.count()
-    total_invoices = CashInvoice.objects.count()
+    total_invoices = CashInvoice.objects.filter(status='FINAL').count()
     
     context = {
         'recent_receipts': recent_receipts,
@@ -162,6 +162,13 @@ def cash_invoice(request):
             if hasattr(invoice, 'nontax_total'):
                 invoice.nontax_total = nontax_total
             
+            # Handle action (Save Draft vs Finalize)
+            action = request.POST.get('action', 'finalize')
+            if action == 'save_draft':
+                invoice.status = 'DRAFT'
+            else:
+                invoice.status = 'FINAL'
+                
             # Save the invoice with all data
             invoice.save()
             
@@ -206,11 +213,14 @@ def cash_invoice(request):
                 'products': products_data
             }
             
-            success_message = f'Cash Invoice {invoice.invoice_number} has been generated successfully!'
-            if apply_vat:
-                success_message += f' (VAT {vat_percentage}% included: GH₵{vat_amount:.2f})'
-            if nontax_total > 0:
-                success_message += f' + Non-Tax Items: GH₵{nontax_total:.2f}'
+            if invoice.status == 'DRAFT':
+                success_message = f'Draft Invoice {invoice.invoice_number} has been saved successfully!'
+            else:
+                success_message = f'Cash Invoice {invoice.invoice_number} has been finalized successfully!'
+                if apply_vat:
+                    success_message += f' (VAT {vat_percentage}% included: GH₵{vat_amount:.2f})'
+                if nontax_total > 0:
+                    success_message += f' + Non-Tax Items: GH₵{nontax_total:.2f}'
             
             messages.success(request, success_message)
             return render(request, 'home/cash_invoice.html', {
@@ -277,6 +287,132 @@ def receipt_detail(request, receipt_id):
 #     """View to display a specific invoice"""
 #     invoice = get_object_or_404(CashInvoice, id=invoice_id)
 #     return render(request, 'home/invoice_detail.html', {'invoice': invoice})
+
+def edit_invoice(request, invoice_id):
+    invoice = get_object_or_404(CashInvoice, id=invoice_id)
+    
+    if invoice.status == 'FINAL':
+        messages.error(request, 'Finalized invoices cannot be edited.')
+        return redirect('home:invoice_list')
+        
+    if request.method == 'POST':
+        form = CashInvoiceForm(request.POST, instance=invoice)
+        if form.is_valid():
+            invoice = form.save(commit=False)
+            
+            # Process product data from POST
+            products_data = []
+            subtotal_amount = Decimal('0.00')
+            product_pattern = re.compile(r'product_desc_(\d+)')
+            product_rows = set()
+            for key in request.POST:
+                match = product_pattern.match(key)
+                if match:
+                    product_rows.add(match.group(1))
+            
+            for row_num in sorted(product_rows):
+                desc_key = f'product_desc_{row_num}'
+                qty_key = f'product_qty_{row_num}'
+                price_key = f'product_price_{row_num}'
+                if all(key in request.POST for key in [desc_key, qty_key, price_key]):
+                    desc = request.POST[desc_key]
+                    qty = int(request.POST[qty_key])
+                    price = Decimal(request.POST[price_key])
+                    product_total = qty * price
+                    products_data.append({
+                        'desc': desc, 'qty': qty, 'price': price, 'total': product_total
+                    })
+                    subtotal_amount += product_total
+            
+            # Handle VAT calculations
+            apply_vat = request.POST.get('apply_vat') == 'on'
+            vat_percentage = Decimal('0.00')
+            vat_amount = Decimal('0.00')
+            total_amount = subtotal_amount
+            
+            if apply_vat:
+                try:
+                    vat_percentage = Decimal(request.POST.get('vat_percentage', '0'))
+                    if 4 <= vat_percentage <= 22:
+                        vat_amount = (subtotal_amount * vat_percentage) / Decimal('100')
+                        total_amount = subtotal_amount + vat_amount
+                    else:
+                        messages.error(request, 'VAT percentage must be between 4% and 22%.')
+                        return redirect('home:edit_invoice', invoice_id=invoice.id)
+                except (ValueError, TypeError):
+                    messages.error(request, 'Invalid VAT percentage value.')
+                    return redirect('home:edit_invoice', invoice_id=invoice.id)
+            
+            # Process non-tax items
+            nontax_data = []
+            nontax_total = Decimal('0.00')
+            nontax_pattern = re.compile(r'nontax_desc_(\d+)')
+            nontax_rows = set()
+            for key in request.POST:
+                match = nontax_pattern.match(key)
+                if match:
+                    nontax_rows.add(match.group(1))
+            
+            for row_num in sorted(nontax_rows):
+                desc_key = f'nontax_desc_{row_num}'
+                qty_key = f'nontax_qty_{row_num}'
+                price_key = f'nontax_price_{row_num}'
+                if all(key in request.POST for key in [desc_key, qty_key, price_key]):
+                    desc = request.POST[desc_key].strip()
+                    if desc:
+                        try:
+                            qty = int(request.POST[qty_key])
+                            price = Decimal(request.POST[price_key])
+                            nontax_item_total = qty * price
+                            nontax_data.append({
+                                'desc': desc, 'qty': qty, 'price': price, 'total': nontax_item_total
+                            })
+                            nontax_total += nontax_item_total
+                        except (ValueError, TypeError):
+                            pass
+            
+            total_amount += nontax_total
+            invoice.total_amount = total_amount
+            if hasattr(invoice, 'vat_applicable'): invoice.vat_applicable = apply_vat
+            if hasattr(invoice, 'vat_percentage'): invoice.vat_percentage = vat_percentage
+            if hasattr(invoice, 'vat_amount'): invoice.vat_amount = vat_amount
+            if hasattr(invoice, 'subtotal_amount'): invoice.subtotal_amount = subtotal_amount
+            if hasattr(invoice, 'nontax_total'): invoice.nontax_total = nontax_total
+            
+            action = request.POST.get('action', 'finalize')
+            if action == 'save_draft':
+                invoice.status = 'DRAFT'
+            else:
+                invoice.status = 'FINAL'
+                
+            invoice.save()
+            
+            # Update invoice products - safely delete existing and recreate
+            InvoiceProduct.objects.filter(invoice=invoice).delete()
+            for p in products_data:
+                InvoiceProduct.objects.create(invoice=invoice, product_description=p['desc'], quantity=p['qty'], unit_price=p['price'], total=p['total'], is_taxable=True)
+            for n in nontax_data:
+                InvoiceProduct.objects.create(invoice=invoice, product_description=n['desc'], quantity=n['qty'], unit_price=n['price'], total=n['total'], is_taxable=False)
+            
+            if invoice.status == 'DRAFT':
+                messages.success(request, f'Draft Invoice {invoice.invoice_number} has been updated successfully!')
+                return redirect('home:invoice_list')
+            else:
+                messages.success(request, f'Invoice {invoice.invoice_number} has been finalized successfully!')
+                return redirect('home:invoice_detail', invoice_id=invoice.id)
+    else:
+        form = CashInvoiceForm(instance=invoice)
+        
+    taxable_products = invoice.products.filter(is_taxable=True)
+    nontax_items = invoice.products.filter(is_taxable=False)
+    
+    return render(request, 'home/cash_invoice.html', {
+        'form': form,
+        'edit_mode': True,
+        'invoice': invoice,
+        'taxable_products': taxable_products,
+        'nontax_items': nontax_items
+    })
 
 
 from decimal import Decimal
