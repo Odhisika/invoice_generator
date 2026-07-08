@@ -9,7 +9,11 @@
         <h1 class="page-title h2 mb-1">Invoice Details</h1>
         <p class="page-subtitle mb-0">Viewing high-end tax invoice #{{ invoice_data.invoice_number }}</p>
     </div>
-    <div class="header-actions">
+    <div class="header-actions d-flex gap-2">
+        <a href="{% url 'home:edit_invoice' invoice.id %}" class="btn btn-outline-primary px-4 border shadow-sm"
+            style="border-radius: 12px;">
+            <i class="bi bi-pencil me-2"></i>Edit
+        </a>
         <a href="{% url 'home:invoice_list' %}" class="btn btn-light px-4 border shadow-sm"
             style="border-radius: 12px;">
             <i class="bi bi-arrow-left me-2"></i>Back to List
@@ -247,12 +251,16 @@
         line-height: 1.4;
     }
 
+    #printable-receipt {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
     @media print {
         @page {
             margin: 0;
         }
 
-        /* Hide UI elements */
         .navbar,
         footer,
         .page-header,
@@ -263,7 +271,6 @@
             display: none !important;
         }
 
-        /* Reset layout for print */
         body {
             background: white !important;
             margin: 0 !important;

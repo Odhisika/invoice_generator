@@ -1,546 +1,546 @@
 {% extends 'base.html' %}
 {% load static humanize %}
 
-{% block title %}Issue Cash Sales/Invoice - LuckyTech Innovation Ground{% endblock %}
+{% block title %}New Invoice - LuckyTech Innovation Ground{% endblock %}
 
 {% block content %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
-    <div>
-        <h1 class="page-title h2 mb-1">Cash Sales/Invoice</h1>
-        <p class="page-subtitle mb-0">Record sales and generate professional tax invoices</p>
-    </div>
-    <div class="header-actions">
-        <a href="{% url 'home:invoice_list' %}" class="btn btn-light px-4 border shadow-sm"
-            style="border-radius: 12px;">
-            <i class="bi bi-journal-text me-2"></i>Manage Invoices
-        </a>
-    </div>
-</div>
-
-<div class="row">
+<div class="row g-4">
     <!-- Form Section -->
-    <div class="col-xl-6 mb-4">
-        <div class="dashboard-card h-100">
-            <h3 class="h5 fw-700 mb-4 pb-2 border-bottom">
-                <i class="bi bi-pencil-square me-2 text-warning"></i>Invoice Details
-            </h3>
-            <form method="post" class="receipt-form" id="invoice-form">
-                {% csrf_token %}
-
-                <!-- Customer Info -->
-                <div class="row g-3 mb-4">
-                    <div class="col-md-7">
-                        <label for="customer_name" class="form-label fw-600 small">Customer Name</label>
-                        <input type="text" class="form-control" id="customer_name" name="customer_name"
-                            placeholder="Full name or Company" value="{{ form.customer_name.value|default:'' }}" required>
+    <div class="col-xl-5">
+        <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h5 class="fw-700 mb-1" style="font-size: 1.1rem;">{% if edit_mode %}Edit Invoice{% else %}New Invoice{% endif %}</h5>
+                        <p class="text-muted small mb-0">Fill in the details below</p>
                     </div>
-                    <div class="col-md-5">
-                        <label for="date" class="form-label fw-600 small">Invoice Date</label>
-                        <input type="date" class="form-control" id="date" name="date" value="{{ form.date.value|date:'Y-m-d'|default:'' }}" required>
-                    </div>
-                    <div class="col-12">
-                        <label for="customer_address" class="form-label fw-600 small">Customer Address</label>
-                        <input type="text" class="form-control" id="customer_address" name="customer_address"
-                            placeholder="Physical location or P.O. Box" value="{{ form.customer_address.value|default:'' }}">
-                    </div>
+                    <a href="{% url 'home:invoice_list' %}" class="btn btn-light btn-sm px-3" style="border-radius: 8px;">
+                        <i class="bi bi-arrow-left me-1"></i>Back
+                    </a>
                 </div>
 
-                <!-- Taxable Products -->
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="h6 fw-700 mb-0 opacity-75">TAXABLE PRODUCTS</h4>
-                        <button type="button" class="btn btn-warning btn-sm fw-700 px-3" id="add-product"
-                            style="border-radius: 8px;">
-                            <i class="bi bi-plus-lg me-1"></i>Add Product
-                        </button>
-                    </div>
-                    <div class="table-responsive bg-light rounded-3 p-2 border">
-                        <table class="table table-borderless align-middle mb-0" id="product-table">
-                            <thead>
-                                <tr class="small fw-700 text-muted border-bottom">
-                                    <th width="50">#</th>
-                                    <th>Description</th>
-                                    <th width="100">Qty</th>
-                                    <th width="130">Price (₵)</th>
-                                    <th width="130">Total (₵)</th>
-                                    <th width="40"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="product-rows">
-                                {% if edit_mode and taxable_products %}
-                                    {% for product in taxable_products %}
-                                    <tr class="product-row" data-row="{{ forloop.counter }}">
-                                        <td class="col-num small fw-700">{{ forloop.counter }}</td>
-                                        <td><input type="text" name="product_desc_{{ forloop.counter }}" class="form-control form-control-sm"
-                                                value="{{ product.product_description }}" required></td>
-                                        <td><input type="number" name="product_qty_{{ forloop.counter }}"
-                                                class="form-control form-control-sm text-center" value="{{ product.quantity }}" min="1" required>
-                                        </td>
-                                        <td><input type="number" name="product_price_{{ forloop.counter }}"
-                                                class="form-control form-control-sm text-end" value="{{ product.unit_price }}" step="0.01" required></td>
-                                        <td><input type="number" name="product_total_{{ forloop.counter }}"
-                                                class="form-control form-control-sm text-end fw-700 bg-transparent border-0"
-                                                value="{{ product.total }}" step="0.01" readonly></td>
-                                        <td><button type="button" class="btn btn-link text-danger p-0 remove-btn"
-                                                {% if forloop.counter == 1 and forloop.last %}disabled{% endif %}><i class="bi bi-trash"></i></button></td>
-                                    </tr>
-                                    {% endfor %}
-                                {% else %}
-                                    <tr class="product-row" data-row="1">
-                                        <td class="col-num small fw-700">1</td>
-                                        <td><input type="text" name="product_desc_1" class="form-control form-control-sm"
-                                                required></td>
-                                        <td><input type="number" name="product_qty_1"
-                                                class="form-control form-control-sm text-center" value="1" min="1" required>
-                                        </td>
-                                        <td><input type="number" name="product_price_1"
-                                                class="form-control form-control-sm text-end" step="0.01" required></td>
-                                        <td><input type="number" name="product_total_1"
-                                                class="form-control form-control-sm text-end fw-700 bg-transparent border-0"
-                                                step="0.01" readonly></td>
-                                        <td><button type="button" class="btn btn-link text-danger p-0 remove-btn"
-                                                disabled><i class="bi bi-trash"></i></button></td>
-                                    </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <form method="post" class="needs-validation" id="invoice-form" novalidate>
+                    {% csrf_token %}
 
-                <!-- Non-Tax Items -->
-                <div class="mb-4 p-3 bg-light rounded-3 border"
-                    style="background-color: #fff9e6 !important; border-color: #ffeeb3 !important;">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="h6 fw-700 mb-0 text-dark opacity-75">NON-TAX ITEMS / SERVICES</h4>
-                        <button type="button" class="btn btn-outline-dark btn-sm fw-700 px-3" id="add-nontax"
-                            style="border-radius: 8px;">
-                            <i class="bi bi-plus-lg me-1"></i>Add Item
-                        </button>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-borderless align-middle mb-0">
-                            <tbody id="nontax-rows">
-                                {% if edit_mode and nontax_items %}
-                                    {% for item in nontax_items %}
-                                    <tr class="nontax-row" data-row="{{ forloop.counter }}">
-                                        <td width="30" class="col-num small fw-700">{{ forloop.counter }}</td>
-                                        <td><input type="text" name="nontax_desc_{{ forloop.counter }}" class="form-control form-control-sm"
-                                                value="{{ item.product_description }}" placeholder="Transport/Delivery..."></td>
-                                        <td width="100"><input type="number" name="nontax_qty_{{ forloop.counter }}"
-                                                class="form-control form-control-sm text-center" value="{{ item.quantity }}" min="1"></td>
-                                        <td width="130"><input type="number" name="nontax_price_{{ forloop.counter }}"
-                                                class="form-control form-control-sm text-end" value="{{ item.unit_price }}" step="0.01"></td>
-                                        <td width="130"><input type="number" name="nontax_total_{{ forloop.counter }}"
-                                                class="form-control form-control-sm text-end fw-700 bg-transparent border-0"
-                                                value="{{ item.total }}" step="0.01" readonly></td>
-                                        <td width="40"><button type="button"
-                                                class="btn btn-link text-danger p-0 remove-btn-nontax"><i
-                                                    class="bi bi-trash"></i></button></td>
-                                    </tr>
-                                    {% endfor %}
-                                {% else %}
-                                    <tr class="nontax-row" data-row="1">
-                                        <td width="30" class="col-num small fw-700">1</td>
-                                        <td><input type="text" name="nontax_desc_1" class="form-control form-control-sm"
-                                                placeholder="Transport/Delivery..."></td>
-                                        <td width="100"><input type="number" name="nontax_qty_1"
-                                                class="form-control form-control-sm text-center" value="1" min="1"></td>
-                                        <td width="130"><input type="number" name="nontax_price_1"
-                                                class="form-control form-control-sm text-end" step="0.01"></td>
-                                        <td width="130"><input type="number" name="nontax_total_1"
-                                                class="form-control form-control-sm text-end fw-700 bg-transparent border-0"
-                                                step="0.01" readonly></td>
-                                        <td width="40"><button type="button"
-                                                class="btn btn-link text-danger p-0 remove-btn-nontax" disabled><i
-                                                    class="bi bi-trash"></i></button></td>
-                                    </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Configuration & Totals -->
-                <div class="row g-4 align-items-end">
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded-3 bg-white shadow-sm mb-3">
-                            <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" id="apply_vat" name="apply_vat"
-                                    onchange="toggleVAT()" {% if form.vat_applicable.value %}checked{% endif %}>
-                                <label class="form-check-label fw-700 small" for="apply_vat">Apply VAT Charges</label>
+                    <!-- Customer Section -->
+                    <div class="mb-4">
+                        <h6 class="fw-600 text-uppercase small text-muted mb-3" style="letter-spacing: 0.5px; font-size: 0.7rem;">
+                            <i class="bi bi-person me-1"></i>Customer Information
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <input type="text" class="form-control form-control-lg" id="customer_name" name="customer_name"
+                                    placeholder="Customer name or company" value="{{ form.customer_name.value|default:'' }}" required
+                                    style="border-radius: 10px; font-size: 0.95rem; padding: 0.7rem 1rem;">
+                                <div class="invalid-feedback">Customer name is required</div>
                             </div>
-                            <select id="vat_percentage" name="vat_percentage" class="form-select form-select-sm"
-                                {% if not form.vat_applicable.value %}disabled{% endif %}>
-                                <option value="0" {% if form.vat_percentage.value|stringformat:"s" == "0.00" %}selected{% endif %}>Select Rate %</option>
-                                <option value="4" {% if form.vat_percentage.value|stringformat:"s" == "4.00" %}selected{% endif %}>4%</option>
-                                <option value="5" {% if form.vat_percentage.value|stringformat:"s" == "5.00" %}selected{% endif %}>5%</option>
-                                <option value="6" {% if form.vat_percentage.value|stringformat:"s" == "6.00" %}selected{% endif %}>6%</option>
-                                <option value="7" {% if form.vat_percentage.value|stringformat:"s" == "7.00" %}selected{% endif %}>7%</option>
-                                <option value="8" {% if form.vat_percentage.value|stringformat:"s" == "8.00" %}selected{% endif %}>8%</option>
-                                <option value="9" {% if form.vat_percentage.value|stringformat:"s" == "9.00" %}selected{% endif %}>9%</option>
-                                <option value="10" {% if form.vat_percentage.value|stringformat:"s" == "10.00" %}selected{% endif %}>10%</option>
-                                <option value="11" {% if form.vat_percentage.value|stringformat:"s" == "11.00" %}selected{% endif %}>11%</option>
-                                <option value="12" {% if form.vat_percentage.value|stringformat:"s" == "12.00" %}selected{% endif %}>12%</option>
-                                <option value="12.5" {% if form.vat_percentage.value|stringformat:"s" == "12.50" %}selected{% endif %}>12.5%</option>
-                                <option value="13" {% if form.vat_percentage.value|stringformat:"s" == "13.00" %}selected{% endif %}>13%</option>
-                                <option value="14" {% if form.vat_percentage.value|stringformat:"s" == "14.00" %}selected{% endif %}>14%</option>
-                                <option value="15" {% if form.vat_percentage.value|stringformat:"s" == "15.00" %}selected{% endif %}>15%</option>
-                                <option value="16" {% if form.vat_percentage.value|stringformat:"s" == "16.00" %}selected{% endif %}>16%</option>
-                                <option value="17" {% if form.vat_percentage.value|stringformat:"s" == "17.00" %}selected{% endif %}>17%</option>
-                                <option value="18" {% if form.vat_percentage.value|stringformat:"s" == "18.00" %}selected{% endif %}>18%</option>
-                                <option value="19" {% if form.vat_percentage.value|stringformat:"s" == "19.00" %}selected{% endif %}>19%</option>
-                                <option value="20" {% if form.vat_percentage.value|stringformat:"s" == "20.00" %}selected{% endif %}>20%</option>
-                                <option value="21" {% if form.vat_percentage.value|stringformat:"s" == "21.00" %}selected{% endif %}>21%</option>
-                                <option value="22" {% if form.vat_percentage.value|stringformat:"s" == "22.00" %}selected{% endif %}>22%</option>
-                            </select>
-                        </div>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <label class="small fw-700 text-muted mb-1">Customer Sign</label>
-                                <input type="text" name="customer_sign" class="form-control form-control-sm"
-                                    placeholder="Name" value="{{ form.customer_sign.value|default:'' }}">
+                            <div class="col-md-5">
+                                <input type="date" class="form-control form-control-lg" id="date" name="date"
+                                    value="{{ form.date.value|date:'Y-m-d'|default:'' }}" required
+                                    style="border-radius: 10px; font-size: 0.95rem; padding: 0.7rem 1rem;">
                             </div>
-                            <div class="col-6">
-                                <label class="small fw-700 text-muted mb-1">Manager Sign</label>
-                                <input type="text" name="manager_sign" class="form-control form-control-sm"
-                                    placeholder="Name" value="{{ form.manager_sign.value|default:'' }}">
+                            <div class="col-12">
+                                <input type="text" class="form-control" id="customer_address" name="customer_address"
+                                    placeholder="Address (optional)" value="{{ form.customer_address.value|default:'' }}"
+                                    style="border-radius: 10px; font-size: 0.9rem; padding: 0.6rem 1rem;">
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="p-3 bg-dark rounded-4 text-white shadow">
-                            <div class="d-flex justify-content-between mb-2 small opacity-75">
-                                <span>Subtotal (Taxable)</span>
-                                <span class="fw-700">₵ <span id="subtotal_display_val">0.00</span></span>
-                                <input type="hidden" id="subtotal_amount" name="subtotal_amount">
+
+                    <hr class="my-4 opacity-25">
+
+                    <!-- Taxable Products -->
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="fw-600 text-uppercase small text-muted mb-0" style="letter-spacing: 0.5px; font-size: 0.7rem;">
+                                <i class="bi bi-box me-1"></i>Products
+                            </h6>
+                            <button type="button" class="btn btn-sm fw-600 px-3" id="add-product"
+                                style="border-radius: 8px; background: #f0f0f0; color: #333; border: none; font-size: 0.8rem;">
+                                <i class="bi bi-plus-lg me-1"></i>Add row
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle mb-0" id="product-table">
+                                <thead>
+                                    <tr class="small text-muted border-bottom" style="font-size: 0.7rem;">
+                                        <th width="30">#</th>
+                                        <th>Description</th>
+                                        <th width="70" class="text-center">Qty</th>
+                                        <th width="100" class="text-end">Price</th>
+                                        <th width="100" class="text-end">Total</th>
+                                        <th width="30"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="product-rows">
+                                    {% if edit_mode and taxable_products %}
+                                        {% for product in taxable_products %}
+                                        <tr class="product-row" data-row="{{ forloop.counter }}">
+                                            <td class="col-num text-muted fw-600" style="font-size: 0.8rem;">{{ forloop.counter }}</td>
+                                            <td><input type="text" name="product_desc_{{ forloop.counter }}" class="form-control form-control-sm"
+                                                    value="{{ product.product_description }}" required
+                                                    style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem;"></td>
+                                            <td><input type="number" name="product_qty_{{ forloop.counter }}"
+                                                    class="form-control form-control-sm text-center" value="{{ product.quantity }}" min="1" required
+                                                    style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem;"></td>
+                                            <td><input type="number" name="product_price_{{ forloop.counter }}"
+                                                    class="form-control form-control-sm text-end" value="{{ product.unit_price }}" step="0.01" required
+                                                    style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem;"></td>
+                                            <td><input type="number" name="product_total_{{ forloop.counter }}"
+                                                    class="form-control form-control-sm text-end fw-600 bg-light border-0"
+                                                    value="{{ product.total }}" step="0.01" readonly
+                                                    style="border-radius: 8px; font-size: 0.85rem;"></td>
+                                            <td><button type="button" class="btn btn-link text-muted p-0 remove-btn"
+                                                    {% if forloop.counter == 1 and forloop.last %}disabled{% endif %}
+                                                    style="font-size: 0.9rem;"><i class="bi bi-x-lg"></i></button></td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr class="product-row" data-row="1">
+                                            <td class="col-num text-muted fw-600" style="font-size: 0.8rem;">1</td>
+                                            <td><input type="text" name="product_desc_1" class="form-control form-control-sm"
+                                                    required style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem;"></td>
+                                            <td><input type="number" name="product_qty_1"
+                                                    class="form-control form-control-sm text-center" value="1" min="1" required
+                                                    style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem;"></td>
+                                            <td><input type="number" name="product_price_1"
+                                                    class="form-control form-control-sm text-end" step="0.01" required
+                                                    style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem;"></td>
+                                            <td><input type="number" name="product_total_1"
+                                                    class="form-control form-control-sm text-end fw-600 bg-light border-0"
+                                                    step="0.01" readonly
+                                                    style="border-radius: 8px; font-size: 0.85rem;"></td>
+                                            <td><button type="button" class="btn btn-link text-muted p-0 remove-btn" disabled
+                                                    style="font-size: 0.9rem;"><i class="bi bi-x-lg"></i></button></td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Non-Tax Items -->
+                    <div class="mb-4 p-3 rounded-3" style="background: #fafaf5; border: 1px solid #f0ede5;">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="fw-600 text-uppercase small text-muted mb-0" style="letter-spacing: 0.5px; font-size: 0.7rem;">
+                                <i class="bi bi-truck me-1"></i>Non-taxable items
+                            </h6>
+                            <button type="button" class="btn btn-sm fw-600 px-3" id="add-nontax"
+                                style="border-radius: 8px; background: #e8e5d8; color: #555; border: none; font-size: 0.8rem;">
+                                <i class="bi bi-plus-lg me-1"></i>Add row
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle mb-0">
+                                <tbody id="nontax-rows">
+                                    {% if edit_mode and nontax_items %}
+                                        {% for item in nontax_items %}
+                                        <tr class="nontax-row" data-row="{{ forloop.counter }}">
+                                            <td width="30" class="col-num text-muted fw-600" style="font-size: 0.8rem;">{{ forloop.counter }}</td>
+                                            <td><input type="text" name="nontax_desc_{{ forloop.counter }}" class="form-control form-control-sm"
+                                                    value="{{ item.product_description }}" placeholder="Description..."
+                                                    style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem; background: white;"></td>
+                                            <td width="70"><input type="number" name="nontax_qty_{{ forloop.counter }}"
+                                                    class="form-control form-control-sm text-center" value="{{ item.quantity }}" min="1"
+                                                    style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem; background: white;"></td>
+                                            <td width="100"><input type="number" name="nontax_price_{{ forloop.counter }}"
+                                                    class="form-control form-control-sm text-end" value="{{ item.unit_price }}" step="0.01"
+                                                    style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem; background: white;"></td>
+                                            <td width="100"><input type="number" name="nontax_total_{{ forloop.counter }}"
+                                                    class="form-control form-control-sm text-end fw-600 bg-light border-0"
+                                                    value="{{ item.total }}" step="0.01" readonly
+                                                    style="border-radius: 8px; font-size: 0.85rem;"></td>
+                                            <td width="30"><button type="button" class="btn btn-link text-muted p-0 remove-btn-nontax"
+                                                    style="font-size: 0.9rem;"><i class="bi bi-x-lg"></i></button></td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr class="nontax-row" data-row="1">
+                                            <td width="30" class="col-num text-muted fw-600" style="font-size: 0.8rem;">1</td>
+                                            <td><input type="text" name="nontax_desc_1" class="form-control form-control-sm"
+                                                    placeholder="Transport, delivery, service..."
+                                                    style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem; background: white;"></td>
+                                            <td width="70"><input type="number" name="nontax_qty_1"
+                                                    class="form-control form-control-sm text-center" value="1" min="1"
+                                                    style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem; background: white;"></td>
+                                            <td width="100"><input type="number" name="nontax_price_1"
+                                                    class="form-control form-control-sm text-end" step="0.01"
+                                                    style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem; background: white;"></td>
+                                            <td width="100"><input type="number" name="nontax_total_1"
+                                                    class="form-control form-control-sm text-end fw-600 bg-light border-0"
+                                                    step="0.01" readonly
+                                                    style="border-radius: 8px; font-size: 0.85rem;"></td>
+                                            <td width="30"><button type="button" class="btn btn-link text-muted p-0 remove-btn-nontax" disabled
+                                                    style="font-size: 0.9rem;"><i class="bi bi-x-lg"></i></button></td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- VAT & Signatures -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-3 p-3 rounded-3 border" style="background: #fafafa;">
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" id="apply_vat" name="apply_vat"
+                                        onchange="toggleVAT()" {% if form.vat_applicable.value %}checked{% endif %}
+                                        style="cursor: pointer; width: 2.5rem; height: 1.3rem;">
+                                </div>
+                                <div>
+                                    <label class="fw-600 small mb-1 d-block" for="apply_vat" style="cursor: pointer; font-size: 0.8rem;">Apply VAT</label>
+                                    <select id="vat_percentage" name="vat_percentage" class="form-select form-select-sm"
+                                        {% if not form.vat_applicable.value %}disabled{% endif %}
+                                        style="border-radius: 8px; font-size: 0.8rem; min-width: 100px; border-color: #e2e8f0;">
+                                        <option value="0">Rate %</option>
+                                        <option value="4">4%</option>
+                                        <option value="5">5%</option>
+                                        <option value="6">6%</option>
+                                        <option value="7">7%</option>
+                                        <option value="8">8%</option>
+                                        <option value="9">9%</option>
+                                        <option value="10">10%</option>
+                                        <option value="11">11%</option>
+                                        <option value="12">12%</option>
+                                        <option value="12.5">12.5%</option>
+                                        <option value="13">13%</option>
+                                        <option value="14">14%</option>
+                                        <option value="15">15%</option>
+                                        <option value="16">16%</option>
+                                        <option value="17">17%</option>
+                                        <option value="18">18%</option>
+                                        <option value="19">19%</option>
+                                        <option value="20">20%</option>
+                                        <option value="21">21%</option>
+                                        <option value="22">22%</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="d-flex justify-content-between mb-2 small text-warning" id="vat-display-row"
-                                style="display: none !important;">
-                                <span>VAT Component</span>
-                                <span class="fw-700">₵ <span id="vat_display_val">0.00</span></span>
-                                <input type="hidden" id="vat_amount" name="vat_amount">
-                            </div>
-                            <div class="d-flex justify-content-between mb-3 small opacity-75">
-                                <span>Non-Tax Items</span>
-                                <span class="fw-700">₵ <span id="nontax_display_val">0.00</span></span>
-                                <input type="hidden" id="nontax_display_amount">
-                            </div>
-                            <div class="d-flex justify-content-between border-top pt-2 mt-2">
-                                <span class="fw-700">Grand Total</span>
-                                <span class="h4 fw-900 mb-0 text-warning gold-gradient-text">₵ <span
-                                        id="total_display_val">0.00</span></span>
-                                <input type="hidden" id="total_amount" name="total_amount">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="text" name="customer_sign" class="form-control form-control-sm"
+                                        placeholder="Customer sign" value="{{ form.customer_sign.value|default:'' }}"
+                                        style="border-radius: 8px; font-size: 0.8rem; border-color: #e2e8f0;">
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" name="manager_sign" class="form-control form-control-sm"
+                                        placeholder="Manager sign" value="{{ form.manager_sign.value|default:'' }}"
+                                        style="border-radius: 8px; font-size: 0.8rem; border-color: #e2e8f0;">
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="mt-4 pt-3 d-grid gap-2">
-                    <button type="submit" name="action" value="save_draft" class="btn btn-outline-secondary fw-700 py-3 mb-2"
-                        style="border-radius: 12px; border-width: 2px;">
-                        <i class="bi bi-save me-2"></i>Save as Draft
+                    <!-- Totals -->
+                    <div class="p-3 rounded-3 mb-4" style="background: #0c0a09; border: 1px solid #2a2a2a;">
+                        <div class="d-flex justify-content-between align-items-center py-1">
+                            <span class="small" style="color: #94a3b8;">Subtotal</span>
+                            <span class="fw-600 text-white">GH₵ <span id="subtotal_display_val">0.00</span></span>
+                            <input type="hidden" id="subtotal_amount" name="subtotal_amount">
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center py-1" id="vat-display-row"
+                            style="display: none !important;">
+                            <span class="small" style="color: #c5a028;">VAT</span>
+                            <span class="fw-600" style="color: #c5a028;">GH₵ <span id="vat_display_val">0.00</span></span>
+                            <input type="hidden" id="vat_amount" name="vat_amount">
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center py-1">
+                            <span class="small" style="color: #94a3b8;">Non-taxable</span>
+                            <span class="fw-600 text-white">GH₵ <span id="nontax_display_val">0.00</span></span>
+                            <input type="hidden" id="nontax_display_amount">
+                        </div>
+                        <hr class="my-2" style="border-color: #2a2a2a;">
+                        <div class="d-flex justify-content-between align-items-center py-1">
+                            <span class="fw-700" style="color: #c5a028;">Total</span>
+                            <span class="h5 fw-800 mb-0" style="color: #c5a028;">GH₵ <span id="total_display_val">0.00</span></span>
+                            <input type="hidden" id="total_amount" name="total_amount">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-lg w-100 fw-700 py-3"
+                        style="background: #c5a028; color: #0c0a09; border: none; border-radius: 12px; font-size: 1rem;">
+                        <i class="bi bi-file-earmark-check me-2"></i>Generate Invoice
                     </button>
-                    <button type="submit" name="action" value="finalize" class="btn btn-warning fw-700 py-3"
-                        style="background: var(--primary-gold); border: none; color: var(--charcoal); border-radius: 12px; box-shadow: 0 4px 15px rgba(226, 209, 51, 0.3);">
-                        <i class="bi bi-file-earmark-check-fill me-2"></i>Finalize Invoice
-                    </button>
-                    <button type="reset" class="btn btn-link text-muted mt-2 border-0" style="text-decoration: none;">
-                        <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Form
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
     <!-- Preview Section -->
-    <div class="col-xl-6">
+    <div class="col-xl-7">
         {% if invoice_data %}
-        <div class="dashboard-card p-0 overflow-hidden sticky-top" style="top: 2rem; border-radius: 16px;">
-            <div
-                class="invoice-preview-header p-3 bg-dark text-white d-flex justify-content-between align-items-center">
-                <span class="fw-700"><i class="bi bi-eye me-2"></i>Invoice Preview</span>
+        <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 16px;">
+            <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom" style="background: #f8f9fa;">
+                <span class="fw-600 small text-muted"><i class="bi bi-eye me-2"></i>Preview</span>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-warning btn-sm fw-700 px-3" onclick="window.print();"
-                        style="border-radius: 8px;">
+                    <button class="btn btn-sm fw-600 px-3" onclick="window.print();"
+                        style="border-radius: 8px; background: #0c0a09; color: white; font-size: 0.8rem;">
                         <i class="bi bi-printer me-1"></i>Print
                     </button>
-                    <button class="btn btn-outline-light btn-sm px-3" onclick="downloadPDF()"
-                        style="border-radius: 8px; border-color: rgba(255,255,255,0.2);">
+                    <button class="btn btn-sm fw-600 px-3" onclick="downloadPDF()"
+                        style="border-radius: 8px; background: #c5a028; color: #0c0a09; font-size: 0.8rem;">
                         <i class="bi bi-download me-1"></i>PDF
                     </button>
                 </div>
             </div>
 
-            <!-- Printable Content -->
-            <div class="invoice-document-wrapper bg-light p-4">
-                <div class="invoice-document shadow-sm mx-auto bg-white p-5" id="printable-receipt"
-                    style="max-width: 210mm; min-height: 297mm; position: relative; border: 1px solid #eee;">
-                    <!-- Watermark -->
-                    <div
-                        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); opacity: 0.03; font-size: 8rem; font-weight: 900; pointer-events: none; white-space: nowrap; width: 100%; text-align: center; color: #000;">
-                        LUCKYTECH
-                    </div>
+            <div class="bg-light p-4">
+                <div class="bg-white shadow-sm mx-auto" id="printable-receipt"
+                    style="max-width: 210mm; min-height: 297mm; position: relative;">
 
-                    <div
-                        class="invoice-top-section d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
-                        <div class="d-flex align-items-center gap-3">
-                            <img src="{% static 'images/logo.jpg' %}" alt="Logo"
-                                style="width: 80px; height: 80px; border-radius: 12px; object-fit: cover;">
-                            <div>
-                                <h2 class="h4 fw-900 mb-0" style="letter-spacing: 1px; color: var(--charcoal);">
-                                    LUCKYTECH</h2>
-                                <p class="small text-muted mb-0 fw-600">INNOVATION GROUND</p>
+                    <!-- Geometric accent bar -->
+                    <div style="height: 6px; background: linear-gradient(90deg, #c5a028 0%, #daa520 50%, #c5a028 100%);"></div>
+
+                    <div class="p-5">
+                        <!-- Watermark -->
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); opacity: 0.02; font-size: 8rem; font-weight: 900; pointer-events: none; white-space: nowrap; color: #000;">
+                            LUCKYTECH
+                        </div>
+
+                        <!-- Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-5">
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="{% static 'images/logo.jpg' %}" alt="Logo"
+                                    style="width: 60px; height: 60px; border-radius: 10px; object-fit: cover;">
+                                <div>
+                                    <h2 class="fw-800 mb-0" style="font-size: 1.3rem; letter-spacing: 1px; color: #0c0a09;">LUCKYTECH</h2>
+                                    <p class="text-muted small fw-600 mb-0" style="font-size: 0.65rem; letter-spacing: 2px;">INNOVATION GROUND</p>
+                                </div>
                             </div>
-                        </div>
-                        <div class="text-end">
-                            <div class="bg-dark text-warning p-2 px-4 rounded-3 d-inline-block mb-2 shadow-sm">
-                                <span class="fw-700 h5 mb-0">CASH SALES/INVOICE</span>
-                            </div>
-                            <div class="text-muted fw-600 small">INV
-                                #{{ invoice_data.invoice_number|default:"0000000"}}</div>
-                            <div class="fw-700 text-dark small mt-1">{{ invoice_data.date }}</div>
-                        </div>
-                    </div>
-
-                    <div class="row mb-4">
-                        <div class="col-7">
-                            <div class="small text-muted text-uppercase fw-700 mb-1"
-                                style="font-size: 0.65rem; letter-spacing: 1px;">Billed To</div>
-                            <div class="h6 fw-900 mb-1 text-dark">{{ invoice_data.customer_name }}</div>
-                            <div class="small fw-600 text-muted" style="max-width: 250px;">
-                                {{invoice_data.customer_address|default:"No physical address provided" }}</div>
-                        </div>
-                        <div class="col-5">
-                            <div class="p-3 bg-light rounded-3 border-end border-warning border-4 text-end">
-                                <div class="small text-muted text-uppercase fw-700 mb-1"
-                                    style="font-size: 0.65rem; letter-spacing: 1px;">Company Contact</div>
-                                <div class="small fw-600 text-dark">0591884422 / 0209522722</div>
-                                <div class="small fw-600 text-dark">info@lig.com.gh</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="invoice-body mb-4">
-                        <table class="table table-sm border">
-                            <thead>
-                                <tr class="bg-dark text-white shadow-sm" style="font-size: 0.75rem;">
-                                    <th class="ps-3 py-2">DESCRIPTION</th>
-                                    <th class="text-center py-2">QTY</th>
-                                    <th class="text-end py-2">UNIT PRICE</th>
-                                    <th class="text-end pe-3 py-2">AMOUNT</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for product in invoice_data.products %}
-                                <tr style="font-size: 0.85rem;">
-                                    <td class="ps-3 py-2 fw-600 border-bottom">{{ product.desc }}</td>
-                                    <td class="text-center py-2 border-bottom">{{ product.qty }}</td>
-                                    <td class="text-end py-2 border-bottom">₵{{ product.price|intcomma }}</td>
-                                    <td class="text-end pe-3 py-2 fw-700 border-bottom">₵{{ product.total|intcomma }}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-
-                                {% if invoice_data.nontax_items %}
-                                <tr class="bg-light">
-                                    <td colspan="4" class="ps-3 py-1 fw-700 x-small text-muted border-bottom">
-                                        NON-TAXABLE ITEMS / SERVICES</td>
-                                </tr>
-                                {% for item in invoice_data.nontax_items %}
-                                <tr style="font-size: 0.85rem;">
-                                    <td class="ps-3 py-2 border-bottom text-muted">{{ item.desc }}</td>
-                                    <td class="text-center py-2 border-bottom text-muted">{{ item.qty }}</td>
-                                    <td class="text-end py-2 border-bottom text-muted">₵{{ item.price|intcomma }}</td>
-                                    <td class="text-end pe-3 py-2 fw-700 border-bottom text-muted">₵{{
-                                        item.total|intcomma }}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="row mt-4">
-                        <div class="col-7">
-                            <div class="p-4 bg-light rounded-4 h-100 border">
-                                <h6 class="fw-900 small text-uppercase mb-2" style="letter-spacing: 1px;">Terms &
-                                    Conditions</h6>
-                                <p class="x-small text-muted mb-0 lh-base">
-                                    • Products once sold are not returnable. <br>
-                                    • All items carry a 1-month warranty unless stated otherwise. <br>
-                                    • Payment is due immediately upon receipt of this invoice. <br>
-                                    • Thank you for your business with LuckyTech!
-                                </p>
-                            </div>
-                        </div>
-                        <div class="col-5">
                             <div class="text-end">
-                                <div class="d-flex justify-content-between mb-2 small px-2">
-                                    <span class="text-muted fw-600">Subtotal (Taxable):</span>
-                                    <span class="fw-700 text-dark">₵{{ invoice_data.subtotal_amount|intcomma }}</span>
+                                <div class="px-3 py-1 mb-2 d-inline-block" style="background: #0c0a09; border-radius: 6px;">
+                                    <span class="fw-700 small text-white" style="font-size: 0.75rem;">INVOICE</span>
                                 </div>
-                                {% if invoice_data.vat_applicable %}
-                                <div class="d-flex justify-content-between mb-2 small px-2 text-primary">
-                                    <span class="fw-700">VAT ({{ invoice_data.vat_percentage }}%):</span>
-                                    <span class="fw-700">₵{{ invoice_data.vat_amount|intcomma }}</span>
+                                <div class="text-muted fw-600" style="font-size: 0.75rem;">#{{ invoice_data.invoice_number|default:"0000000" }}</div>
+                                <div class="fw-600" style="font-size: 0.8rem; color: #333;">{{ invoice_data.date }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Billed To / Company -->
+                        <div class="row g-4 mb-5">
+                            <div class="col-7">
+                                <div class="text-muted text-uppercase fw-600 mb-2" style="font-size: 0.6rem; letter-spacing: 1px;">Billed To</div>
+                                <div class="fw-700 mb-1" style="font-size: 1rem; color: #0c0a09;">{{ invoice_data.customer_name }}</div>
+                                <div class="text-muted small" style="max-width: 250px; font-size: 0.8rem;">
+                                    {{ invoice_data.customer_address|default:"No address provided" }}
                                 </div>
-                                {% endif %}
-                                {% if invoice_data.nontax_total and invoice_data.nontax_total > 0 %}
-                                <div class="d-flex justify-content-between mb-3 small px-2">
-                                    <span class="text-muted fw-600">Non-Tax Total:</span>
-                                    <span class="fw-700 text-dark">₵{{ invoice_data.nontax_total|intcomma }}</span>
-                                </div>
-                                {% endif %}
-                                <div class="d-flex justify-content-between bg-dark text-warning rounded-3 p-3 shadow">
-                                    <span class="fw-900">GRAND TOTAL:</span>
-                                    <span class="h5 fw-900 mb-0">GH₵ {{ invoice_data.total_amount|intcomma }}</span>
+                            </div>
+                            <div class="col-5">
+                                <div class="p-3 rounded-3 text-end" style="background: #f8f9fa; border-left: 3px solid #c5a028;">
+                                    <div class="text-muted text-uppercase fw-600 mb-2" style="font-size: 0.6rem; letter-spacing: 1px;">Contact</div>
+                                    <div class="small fw-600" style="font-size: 0.8rem;">0591884422 / 0209522722</div>
+                                    <div class="small fw-600" style="font-size: 0.8rem;">info@lig.com.gh</div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="invoice-signature mt-5 pt-4 d-flex justify-content-between align-items-end">
-                        <div class="text-center" style="width: 180px;">
-                            <div class="fw-900 text-dark border-bottom pb-2 mb-1" style="font-size: 0.85rem;">
-                                {{ invoice_data.customer_sign|default:"________________" }}</div>
-                            <div class="x-small text-muted fw-700 text-uppercase" style="letter-spacing: 1px;">Customer
-                                Sign</div>
+                        <!-- Products Table -->
+                        <div class="mb-5">
+                            <table class="table mb-0" style="border-collapse: separate; border-spacing: 0;">
+                                <thead>
+                                    <tr style="background: #0c0a09;">
+                                        <th class="text-white fw-600 ps-3 py-2" style="font-size: 0.65rem; letter-spacing: 1px; border-radius: 8px 0 0 0;">DESCRIPTION</th>
+                                        <th class="text-white fw-600 text-center py-2" style="font-size: 0.65rem; letter-spacing: 1px;">QTY</th>
+                                        <th class="text-white fw-600 text-end py-2" style="font-size: 0.65rem; letter-spacing: 1px;">UNIT PRICE</th>
+                                        <th class="text-white fw-600 text-end pe-3 py-2" style="font-size: 0.65rem; letter-spacing: 1px; border-radius: 0 8px 0 0;">AMOUNT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in invoice_data.products %}
+                                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                                        <td class="ps-3 py-3 fw-500" style="font-size: 0.85rem;">{{ product.desc }}</td>
+                                        <td class="text-center py-3 text-muted" style="font-size: 0.85rem;">{{ product.qty }}</td>
+                                        <td class="text-end py-3 text-muted" style="font-size: 0.85rem;">GH₵ {{ product.price|intcomma }}</td>
+                                        <td class="text-end pe-3 py-3 fw-600" style="font-size: 0.85rem;">GH₵ {{ product.total|intcomma }}</td>
+                                    </tr>
+                                    {% endfor %}
+
+                                    {% if invoice_data.nontax_items %}
+                                    <tr>
+                                        <td colspan="4" class="ps-3 py-2 fw-600 text-muted" style="font-size: 0.65rem; letter-spacing: 1px; background: #fafaf5;">
+                                            NON-TAXABLE ITEMS / SERVICES
+                                        </td>
+                                    </tr>
+                                    {% for item in invoice_data.nontax_items %}
+                                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                                        <td class="ps-3 py-3 text-muted" style="font-size: 0.85rem;">{{ item.desc }}</td>
+                                        <td class="text-center py-3 text-muted" style="font-size: 0.85rem;">{{ item.qty }}</td>
+                                        <td class="text-end py-3 text-muted" style="font-size: 0.85rem;">GH₵ {{ item.price|intcomma }}</td>
+                                        <td class="text-end pe-3 py-3 fw-600 text-muted" style="font-size: 0.85rem;">GH₵ {{ item.total|intcomma }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="text-center" style="width: 220px;">
-                            <div class="fw-900 text-dark border-bottom border-warning border-3 pb-2 mb-1"
-                                style="font-size: 0.85rem; position: relative;">
-                                {{ invoice_data.manager_sign|default:"LUCKYTECH MANAGER" }}
-                                <div
-                                    style="position: absolute; bottom: 15px; right: 10px; font-family: 'Brush Script MT', cursive; font-size: 1.5rem; opacity: 0.3; color: var(--charcoal);">
-                                    LuckyTech
+
+                        <!-- Totals & Terms -->
+                        <div class="row g-4">
+                            <div class="col-7">
+                                <div class="p-4 rounded-3" style="background: #f8f9fa;">
+                                    <h6 class="fw-700 small text-uppercase mb-3" style="letter-spacing: 1px; font-size: 0.65rem;">Terms</h6>
+                                    <ul class="list-unstyled small text-muted mb-0" style="font-size: 0.75rem; line-height: 1.8;">
+                                        <li>Products once sold are not returnable.</li>
+                                        <li>All items carry a 1-month warranty unless stated otherwise.</li>
+                                        <li>Payment is due immediately upon receipt.</li>
+                                        <li>Thank you for your business!</li>
+                                    </ul>
                                 </div>
                             </div>
-                            <div class="x-small text-muted fw-700 text-uppercase" style="letter-spacing: 1px;">
-                                Authorized Manager</div>
+                            <div class="col-5">
+                                <div class="text-end">
+                                    <div class="d-flex justify-content-between mb-2 px-1">
+                                        <span class="text-muted small">Subtotal</span>
+                                        <span class="fw-600" style="font-size: 0.9rem;">GH₵ {{ invoice_data.subtotal_amount|intcomma }}</span>
+                                    </div>
+                                    {% if invoice_data.vat_applicable %}
+                                    <div class="d-flex justify-content-between mb-2 px-1">
+                                        <span class="small" style="color: #c5a028;">VAT ({{ invoice_data.vat_percentage }}%)</span>
+                                        <span class="fw-600" style="color: #c5a028; font-size: 0.9rem;">GH₵ {{ invoice_data.vat_amount|intcomma }}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if invoice_data.nontax_total and invoice_data.nontax_total > 0 %}
+                                    <div class="d-flex justify-content-between mb-3 px-1">
+                                        <span class="text-muted small">Non-taxable</span>
+                                        <span class="fw-600" style="font-size: 0.9rem;">GH₵ {{ invoice_data.nontax_total|intcomma }}</span>
+                                    </div>
+                                    {% endif %}
+                                    <div class="d-flex justify-content-between p-3 rounded-3" style="background: #0c0a09;">
+                                        <span class="fw-700" style="color: #c5a028;">TOTAL</span>
+                                        <span class="h5 fw-800 mb-0" style="color: #c5a028;">GH₵ {{ invoice_data.total_amount|intcomma }}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="invoice-footer-text text-center text-muted x-small mt-5 pt-4 border-top">
-                        <span class="fw-700 text-dark">LuckyTech Innovation Ground</span> | Dealers in Computers, IT
-                        Support, Robotics & Apps
-                        <br>
-                        Location: Adjacent Apex Bank, Koforidua | Merchant ID # 972913
+                        <!-- Signatures -->
+                        <div class="d-flex justify-content-between align-items-end mt-5 pt-4">
+                            <div class="text-center" style="width: 180px;">
+                                <div class="fw-700 pb-2 mb-1 border-bottom" style="font-size: 0.8rem;">
+                                    {{ invoice_data.customer_sign|default:"________________" }}
+                                </div>
+                                <div class="text-muted fw-600 text-uppercase" style="font-size: 0.6rem; letter-spacing: 1px;">Customer</div>
+                            </div>
+                            <div class="text-center" style="width: 200px;">
+                                <div class="fw-700 pb-2 mb-1 border-bottom" style="border-bottom: 2px solid #c5a028 !important; font-size: 0.8rem;">
+                                    {{ invoice_data.manager_sign|default:"LUCKYTECH MANAGER" }}
+                                </div>
+                                <div class="text-muted fw-600 text-uppercase" style="font-size: 0.6rem; letter-spacing: 1px;">Authorized Signatory</div>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="text-center text-muted mt-5 pt-3 border-top small" style="font-size: 0.7rem;">
+                            <span class="fw-600" style="color: #333;">LuckyTech Innovation Ground</span> | Dealers in Computers, IT Support, Robotics & Apps<br>
+                            Adjacent Apex Bank, Koforidua | Merchant ID # 972913
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         {% else %}
-        <div
-            class="dashboard-card h-100 d-flex flex-column justify-content-center align-items-center py-5 text-center bg-light border-0">
-            <div class="card-icon-wrapper mb-4 opacity-50"
-                style="width: 100px; height: 100px; font-size: 3rem; background: rgba(0,0,0,0.05); border: none; color: #aaa;">
-                <i class="bi bi-file-earmark-spreadsheet"></i>
+        <div class="card border-0 shadow-sm" style="border-radius: 16px; min-height: 500px;">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-5">
+                <div class="mb-4" style="width: 80px; height: 80px; background: #f8f9fa; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-file-earmark-text" style="font-size: 2rem; color: #ccc;"></i>
+                </div>
+                <h5 class="fw-700 text-muted mb-2">Invoice Preview</h5>
+                <p class="text-muted small mx-auto" style="max-width: 280px;">Fill in the form and generate the invoice to see a live preview here.</p>
             </div>
-            <h4 class="fw-700 text-muted">Live Preview</h4>
-            <p class="text-muted small mx-auto" style="max-width: 250px;">Detailed invoice preview will appear here once
-                you generate the document.</p>
         </div>
         {% endif %}
     </div>
 </div>
 
+<!-- Password Authorization Modal for FINAL invoices -->
+{% if require_password %}
+<div class="modal fade" id="passwordAuthModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header border-0 pt-4" style="background: #0c0a09; border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title fw-700 text-white" style="font-size: 1rem;">
+                    <i class="bi bi-shield-lock me-2" style="color: #c5a028;"></i>Authorize Edit
+                </h5>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3" style="font-size: 2.5rem; color: #c5a028;">
+                        <i class="bi bi-lock-fill"></i>
+                    </div>
+                    <p class="fw-500 text-muted small mb-3">This invoice is finalized. Enter your password to edit.</p>
+                    <input type="password" name="edit_password" class="form-control form-control-lg text-center"
+                        placeholder="Your password" required autofocus
+                        style="border-radius: 10px; font-size: 0.9rem;">
+                    <input type="hidden" name="authorize" value="1">
+                </div>
+                <div class="modal-footer border-0 justify-content-center pb-4 pt-0">
+                    <button type="submit" class="btn px-5 py-2 fw-700" style="border-radius: 10px; background: #c5a028; color: #0c0a09; border: none;">
+                        <i class="bi bi-check-lg me-2"></i>Authorize
+                    </button>
+                    <a href="{% url 'home:invoice_list' %}" class="btn btn-light fw-700 px-4 py-2" style="border-radius: 10px;">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var modal = new bootstrap.Modal(document.getElementById('passwordAuthModal'));
+        modal.show();
+    });
+</script>
+{% endif %}
+
 {% endblock %}
 
 {% block extra_css %}
 <style>
-    .fw-900 {
-        font-weight: 900;
+    .fw-800 { font-weight: 800; }
+    .fw-700 { font-weight: 700; }
+    .fw-600 { font-weight: 600; }
+    .fw-500 { font-weight: 500; }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #c5a028;
+        box-shadow: 0 0 0 3px rgba(197, 160, 40, 0.1);
     }
 
-    .fw-700 {
-        font-weight: 700;
+    .form-control-lg::placeholder {
+        color: #adb5bd;
+        font-weight: 400;
     }
 
-    .fw-600 {
-        font-weight: 600;
-    }
-
-    .fw-500 {
-        font-weight: 500;
-    }
-
-    .x-small {
-        font-size: 0.7rem;
-    }
-
-    .italic {
-        font-style: italic;
-    }
-
-    .invoice-document {
+    #printable-receipt {
         font-family: 'Inter', sans-serif;
         color: #333;
-        line-height: 1.4;
-    }
-
-    .form-control-sm,
-    .form-select-sm {
-        border-radius: 8px;
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
+        line-height: 1.5;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 
     @media print {
-        @page {
-            margin: 0;
-        }
-
-        /* Hide UI elements */
-        .navbar,
-        footer,
-        .page-header,
-        .invoice-preview-header,
-        .header-actions,
-        .col-xl-6:first-of-type,
-        .btn,
-        .nav-tabs,
-        .alert {
+        @page { margin: 0; }
+        .navbar, footer, .page-header, .btn, .alert,
+        .col-xl-5, .card-body, .bg-light.p-4,
+        .d-flex.align-items-center.justify-content-between.px-4.py-3 {
             display: none !important;
         }
-
-        /* Reset layout for print */
-        body {
-            background: white !important;
-            margin: 0 !important;
-            padding: 0 !important;
+        body { background: white !important; margin: 0 !important; padding: 0 !important; }
+        .container-fluid, .row, .col-xl-7 {
+            padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important;
         }
-
-        .dashboard-wrapper,
-        .container-fluid,
-        .row,
-        .col-xl-6 {
-            padding: 0 !important;
-            margin: 0 !important;
-            width: 100% !important;
-            max-width: none !important;
-        }
-
-        .dashboard-card {
-            border: none !important;
-            box-shadow: none !important;
-            background: transparent !important;
-        }
-
-        .invoice-document-wrapper {
-            padding: 0 !important;
-            background: transparent !important;
-        }
-
+        .card { border: none !important; box-shadow: none !important; background: transparent !important; }
         #printable-receipt {
-            position: static !important;
-            margin: 0 !important;
-            padding: 20px !important;
-            width: 100% !important;
-            border: none !important;
-            box-shadow: none !important;
+            position: static !important; margin: 0 !important; padding: 20px !important;
+            width: 100% !important; border: none !important; box-shadow: none !important;
         }
     }
 </style>
@@ -553,7 +553,6 @@
         const vatCheckbox = document.getElementById('apply_vat');
         const vatSelect = document.getElementById('vat_percentage');
         const vatRow = document.getElementById('vat-display-row');
-
         if (vatSelect) vatSelect.disabled = !vatCheckbox.checked;
         if (vatRow) {
             if (!vatCheckbox.checked) {
@@ -570,39 +569,32 @@
         let subtotal = 0;
         let nontaxTotal = 0;
 
-        // Calculate subtotal for taxable products
         document.querySelectorAll('.product-row').forEach(row => {
             const qtyInput = row.querySelector('input[name*="qty"]');
             const priceInput = row.querySelector('input[name*="price"]');
             const totalInput = row.querySelector('input[name*="total"]');
-
             if (qtyInput && priceInput && totalInput) {
                 const qty = parseFloat(qtyInput.value) || 0;
                 const price = parseFloat(priceInput.value) || 0;
                 const total = qty * price;
-
                 totalInput.value = total.toFixed(2);
                 subtotal += total;
             }
         });
 
-        // Calculate total for non-tax items
         document.querySelectorAll('.nontax-row').forEach(row => {
             const qtyInput = row.querySelector('input[name*="qty"]');
             const priceInput = row.querySelector('input[name*="price"]');
             const totalInput = row.querySelector('input[name*="total"]');
-
             if (qtyInput && priceInput && totalInput) {
                 const qty = parseFloat(qtyInput.value) || 0;
                 const price = parseFloat(priceInput.value) || 0;
                 const total = qty * price;
-
                 totalInput.value = total.toFixed(2);
                 nontaxTotal += total;
             }
         });
 
-        // Update displays
         if (document.getElementById('subtotal_display_val'))
             document.getElementById('subtotal_display_val').textContent = subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 });
         if (document.getElementById('subtotal_amount'))
@@ -610,7 +602,6 @@
 
         const applyVAT = document.getElementById('apply_vat')?.checked || false;
         const vatPercentage = parseFloat(document.getElementById('vat_percentage')?.value) || 0;
-
         let vatAmount = 0;
         let finalTotal = subtotal;
 
@@ -618,19 +609,16 @@
             vatAmount = (subtotal * vatPercentage) / 100;
             finalTotal = subtotal + vatAmount;
         }
-
         finalTotal += nontaxTotal;
 
         if (document.getElementById('vat_display_val'))
             document.getElementById('vat_display_val').textContent = vatAmount.toLocaleString('en-US', { minimumFractionDigits: 2 });
         if (document.getElementById('vat_amount'))
             document.getElementById('vat_amount').value = vatAmount.toFixed(2);
-
         if (document.getElementById('nontax_display_val'))
             document.getElementById('nontax_display_val').textContent = nontaxTotal.toLocaleString('en-US', { minimumFractionDigits: 2 });
         if (document.getElementById('nontax_display_amount'))
             document.getElementById('nontax_display_amount').value = nontaxTotal.toFixed(2);
-
         if (document.getElementById('total_display_val'))
             document.getElementById('total_display_val').textContent = finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2 });
         if (document.getElementById('total_amount'))
@@ -647,7 +635,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Add product row
         const addProductBtn = document.getElementById('add-product');
         if (addProductBtn) {
             addProductBtn.addEventListener('click', function () {
@@ -657,12 +644,12 @@
                 newRow.className = 'product-row';
                 newRow.setAttribute('data-row', productRowCount);
                 newRow.innerHTML = `
-                    <td class="col-num small fw-700">${productRowCount}</td>
-                    <td><input type="text" name="product_desc_${productRowCount}" class="form-control form-control-sm" required></td>
-                    <td><input type="number" name="product_qty_${productRowCount}" class="form-control form-control-sm text-center" value="1" min="1" required></td>
-                    <td><input type="number" name="product_price_${productRowCount}" class="form-control form-control-sm text-end" step="0.01" required></td>
-                    <td><input type="number" name="product_total_${productRowCount}" class="form-control form-control-sm text-end fw-700 bg-transparent border-0" step="0.01" readonly></td>
-                    <td><button type="button" class="btn btn-link text-danger p-0 remove-btn"><i class="bi bi-trash"></i></button></td>
+                    <td class="col-num text-muted fw-600" style="font-size: 0.8rem;">${productRowCount}</td>
+                    <td><input type="text" name="product_desc_${productRowCount}" class="form-control form-control-sm" required style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem;"></td>
+                    <td><input type="number" name="product_qty_${productRowCount}" class="form-control form-control-sm text-center" value="1" min="1" required style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem;"></td>
+                    <td><input type="number" name="product_price_${productRowCount}" class="form-control form-control-sm text-end" step="0.01" required style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem;"></td>
+                    <td><input type="number" name="product_total_${productRowCount}" class="form-control form-control-sm text-end fw-600 bg-light border-0" step="0.01" readonly style="border-radius: 8px; font-size: 0.85rem;"></td>
+                    <td><button type="button" class="btn btn-link text-muted p-0 remove-btn" style="font-size: 0.9rem;"><i class="bi bi-x-lg"></i></button></td>
                 `;
                 tbody.appendChild(newRow);
                 updateNumbers('.product-row');
@@ -670,7 +657,6 @@
             });
         }
 
-        // Add non-tax row
         const addNontaxBtn = document.getElementById('add-nontax');
         if (addNontaxBtn) {
             addNontaxBtn.addEventListener('click', function () {
@@ -680,12 +666,12 @@
                 newRow.className = 'nontax-row';
                 newRow.setAttribute('data-row', nontaxRowCount);
                 newRow.innerHTML = `
-                    <td width="30" class="col-num small fw-700">${nontaxRowCount}</td>
-                    <td><input type="text" name="nontax_desc_${nontaxRowCount}" class="form-control form-control-sm" placeholder="Transport/Delivery..."></td>
-                    <td width="100"><input type="number" name="nontax_qty_${nontaxRowCount}" class="form-control form-control-sm text-center" value="1" min="1"></td>
-                    <td width="130"><input type="number" name="nontax_price_${nontaxRowCount}" class="form-control form-control-sm text-end" step="0.01"></td>
-                    <td width="130"><input type="number" name="nontax_total_${nontaxRowCount}" class="form-control form-control-sm text-end fw-700 bg-transparent border-0" step="0.01" readonly></td>
-                    <td width="40"><button type="button" class="btn btn-link text-danger p-0 remove-btn-nontax"><i class="bi bi-trash"></i></button></td>
+                    <td width="30" class="col-num text-muted fw-600" style="font-size: 0.8rem;">${nontaxRowCount}</td>
+                    <td><input type="text" name="nontax_desc_${nontaxRowCount}" class="form-control form-control-sm" placeholder="Description..." style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem; background: white;"></td>
+                    <td width="70"><input type="number" name="nontax_qty_${nontaxRowCount}" class="form-control form-control-sm text-center" value="1" min="1" style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem; background: white;"></td>
+                    <td width="100"><input type="number" name="nontax_price_${nontaxRowCount}" class="form-control form-control-sm text-end" step="0.01" style="border-radius: 8px; border-color: #e2e8f0; font-size: 0.85rem; background: white;"></td>
+                    <td width="100"><input type="number" name="nontax_total_${nontaxRowCount}" class="form-control form-control-sm text-end fw-600 bg-light border-0" step="0.01" readonly style="border-radius: 8px; font-size: 0.85rem;"></td>
+                    <td width="30"><button type="button" class="btn btn-link text-muted p-0 remove-btn-nontax" style="font-size: 0.9rem;"><i class="bi bi-x-lg"></i></button></td>
                 `;
                 tbody.appendChild(newRow);
                 updateNumbers('.nontax-row');
@@ -693,7 +679,6 @@
             });
         }
 
-        // Use event delegation for Remove Buttons and Input Changes
         document.body.addEventListener('click', function (e) {
             if (e.target.closest('.remove-btn')) {
                 const row = e.target.closest('tr');

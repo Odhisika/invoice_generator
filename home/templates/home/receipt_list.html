@@ -4,61 +4,60 @@
 {% block title %}Manage Receipts - LuckyTech Innovation Ground{% endblock %}
 
 {% block content %}
-<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
     <div>
-        <h1 class="page-title h2 mb-1">Official Receipts</h1>
-        <p class="page-subtitle mb-0">Browse and manage all generated official receipts</p>
+        <h1 class="h3 fw-800 mb-1" style="letter-spacing: -0.025em;">Receipts</h1>
+        <p class="text-muted small mb-0">Browse and manage all generated receipts</p>
     </div>
-    <div class="header-actions d-flex gap-2">
-        <a href="{% url 'home:official_receipt' %}" class="btn btn-warning fw-700 px-4"
-            style="border-radius: 12px; background: var(--primary-gold); border: none; color: var(--charcoal);">
-            <i class="bi bi-plus-lg me-2"></i>New Receipt
-        </a>
-    </div>
+    <a href="{% url 'home:official_receipt' %}" class="btn fw-700 px-4"
+        style="background: #c5a028; color: #0c0a09; border: none; border-radius: 10px;">
+        <i class="bi bi-plus-lg me-2"></i>New Receipt
+    </a>
 </div>
 
-<!-- Search & Filter Bar -->
-<div class="dashboard-card mb-4 p-3">
-    <form method="get" class="row g-3 align-items-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0 text-muted ps-3">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="text" name="search" class="form-control border-start-0 ps-0"
-                    placeholder="Search by recipient, number, or purpose..." value="{{ search_query }}"
-                    style="border-radius: 0 12px 12px 0;">
+<!-- Search -->
+<div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
+    <div class="card-body p-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted ps-3" style="border-radius: 10px 0 0 10px;">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="search" class="form-control border-start-0 ps-0"
+                        placeholder="Search by recipient, number, or purpose..." value="{{ search_query }}"
+                        style="border-radius: 0 10px 10px 0;">
+                </div>
             </div>
-        </div>
-        <div class="col-md-4 col-lg-3 d-flex gap-2">
-            <button type="submit" class="btn btn-dark px-4" style="border-radius: 10px;">Filter</button>
-            {% if search_query %}
-            <a href="{% url 'home:receipt_list' %}" class="btn btn-outline-secondary px-3"
-                style="border-radius: 10px;">Clear</a>
-            {% endif %}
-        </div>
-    </form>
+            <div class="col-md-4 col-lg-3 d-flex gap-2">
+                <button type="submit" class="btn btn-dark px-4" style="border-radius: 8px;">Filter</button>
+                {% if search_query %}
+                <a href="{% url 'home:receipt_list' %}" class="btn btn-outline-secondary px-3" style="border-radius: 8px;">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
 </div>
 
 {% if receipts %}
-<div class="dashboard-card p-0 overflow-hidden">
+<div class="card border-0 shadow-sm" style="border-radius: 12px;">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0 activity-table border-0" style="border-radius: 0;">
-            <thead class="bg-light">
-                <tr>
-                    <th class="ps-4">Receipt Details</th>
-                    <th>Received From</th>
-                    <th>Purpose</th>
-                    <th>Amount</th>
-                    <th class="text-end pe-4">Actions</th>
+        <table class="table table-hover align-middle mb-0" style="border-radius: 12px;">
+            <thead>
+                <tr style="background: #f8f9fa;">
+                    <th class="ps-4 py-3 fw-600 small text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Receipt</th>
+                    <th class="py-3 fw-600 small text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Received From</th>
+                    <th class="py-3 fw-600 small text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Purpose</th>
+                    <th class="py-3 fw-600 small text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Amount</th>
+                    <th class="text-end pe-4 py-3 fw-600 small text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Actions</th>
                 </tr>
             </thead>
-            <tbody class="border-top-0">
+            <tbody>
                 {% for receipt in receipts %}
                 <tr>
                     <td class="ps-4">
-                        <div class="fw-700 text-dark">#{{ receipt.receipt_number }}</div>
-                        <div class="text-muted x-small">{{ receipt.date|date:"M d, Y" }}</div>
+                        <div class="fw-700" style="color: #0c0a09;">#{{ receipt.receipt_number }}</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">{{ receipt.date|date:"M d, Y" }}</div>
                     </td>
                     <td>
                         <div class="fw-500">{{ receipt.received_from|truncatechars:35 }}</div>
@@ -67,17 +66,17 @@
                         <div class="text-muted small">{{ receipt.purpose|truncatechars:45 }}</div>
                     </td>
                     <td>
-                        <div class="fw-700 text-success">GH₵{{ receipt.amount|floatformat:2|intcomma }}</div>
+                        <div class="fw-700" style="color: #0c0a09;">GH₵{{ receipt.amount|floatformat:2|intcomma }}</div>
                     </td>
                     <td class="text-end pe-4">
                         <div class="d-flex justify-content-end gap-2">
                             <a href="{% url 'home:receipt_detail' receipt.id %}" class="btn btn-light btn-sm px-3"
-                                style="border-radius: 8px;">
-                                <i class="bi bi-eye me-1"></i> View
+                                style="border-radius: 8px; font-size: 0.8rem;">
+                                <i class="bi bi-eye me-1"></i>View
                             </a>
                             <form action="{% url 'home:delete_receipt' receipt.id %}" method="post"
                                 style="display:inline;"
-                                onsubmit="return confirm('Securely delete this receipt? This action cannot be undone.');">
+                                onsubmit="return confirm('Delete this receipt? This action cannot be undone.');">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-outline-danger btn-sm border-0"
                                     style="border-radius: 8px;">
@@ -102,7 +101,7 @@
             <li class="page-item">
                 <a class="page-link border-0 shadow-sm"
                     href="?page={{ receipts.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
-                    style="border-radius: 10px; color: var(--charcoal);">
+                    style="border-radius: 10px; color: #0c0a09;">
                     <i class="bi bi-chevron-left"></i>
                 </a>
             </li>
@@ -110,7 +109,7 @@
 
             <li class="page-item active">
                 <span class="page-link border-0 shadow-sm"
-                    style="border-radius: 10px; background: var(--primary-gold); color: var(--charcoal); font-weight: 700;">
+                    style="border-radius: 10px; background: #c5a028; color: #0c0a09; font-weight: 700;">
                     {{ receipts.number }}
                 </span>
             </li>
@@ -119,7 +118,7 @@
             <li class="page-item">
                 <a class="page-link border-0 shadow-sm"
                     href="?page={{ receipts.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
-                    style="border-radius: 10px; color: var(--charcoal);">
+                    style="border-radius: 10px; color: #0c0a09;">
                     <i class="bi bi-chevron-right"></i>
                 </a>
             </li>
@@ -130,28 +129,30 @@
 {% endif %}
 
 {% else %}
-<div class="dashboard-card py-5 text-center">
-    <div class="card-icon-wrapper mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2.5rem;">
-        <i class="bi bi-inbox"></i>
-    </div>
-    <h3 class="h4 fw-700">No Receipts Found</h3>
-    <p class="text-muted mx-auto" style="max-width: 400px;">
-        {% if search_query %}
-        We couldn't find any receipts matching "{{ search_query }}". Try a different search term.
-        {% else %}
-        Your receipt repository is currently empty. Start by creating a new official receipt.
-        {% endif %}
-    </p>
-    <div class="mt-4">
-        {% if search_query %}
-        <a href="{% url 'home:receipt_list' %}" class="btn btn-dark px-4" style="border-radius: 12px;">View All
-            Receipts</a>
-        {% else %}
-        <a href="{% url 'home:official_receipt' %}" class="btn btn-warning fw-700 px-4"
-            style="border-radius: 12px; background: var(--primary-gold); border: none; color: var(--charcoal);">
-            Create First Receipt
-        </a>
-        {% endif %}
+<div class="card border-0 shadow-sm py-5 text-center" style="border-radius: 12px;">
+    <div class="card-body">
+        <div class="mx-auto mb-4 d-flex align-items-center justify-content-center"
+            style="width: 80px; height: 80px; background: #f8f9fa; border-radius: 16px;">
+            <i class="bi bi-inbox" style="font-size: 2rem; color: #ccc;"></i>
+        </div>
+        <h5 class="fw-700 text-muted mb-2">No Receipts Found</h5>
+        <p class="text-muted small mx-auto" style="max-width: 400px;">
+            {% if search_query %}
+            No receipts matching "{{ search_query }}". Try a different search.
+            {% else %}
+            Your receipt repository is empty. Create your first receipt.
+            {% endif %}
+        </p>
+        <div class="mt-4">
+            {% if search_query %}
+            <a href="{% url 'home:receipt_list' %}" class="btn btn-dark px-4" style="border-radius: 10px;">View All Receipts</a>
+            {% else %}
+            <a href="{% url 'home:official_receipt' %}" class="btn fw-700 px-4"
+                style="background: #c5a028; color: #0c0a09; border: none; border-radius: 10px;">
+                Create First Receipt
+            </a>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endif %}
@@ -159,24 +160,13 @@
 
 {% block extra_css %}
 <style>
-    .fw-700 {
-        font-weight: 700;
-    }
+    .fw-700 { font-weight: 700; }
+    .fw-600 { font-weight: 600; }
+    .fw-500 { font-weight: 500; }
 
-    .fw-600 {
-        font-weight: 600;
-    }
-
-    .fw-500 {
-        font-weight: 500;
-    }
-
-    .x-small {
-        font-size: 0.75rem;
-    }
-
-    .bg-light {
-        background-color: #f8fafc !important;
+    .table > :not(caption) > * > * {
+        border-bottom-color: #f0f0f0;
+        padding: 1rem 1rem;
     }
 
     .pagination-rounded .page-link {

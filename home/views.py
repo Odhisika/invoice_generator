@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import JsonResponse, Http404
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Sum
 from .models import OfficialReceipt, CashInvoice, InvoiceProduct
 from .forms import OfficialReceiptForm, CashInvoiceForm, InvoiceProductForm
 from decimal import Decimal
@@ -11,21 +11,25 @@ import re
 from django.views.decorators.http import require_POST
 
 def index(request):
-    # Get recent receipts and invoices for dashboard
     recent_receipts = OfficialReceipt.objects.all()[:5]
     recent_invoices = CashInvoice.objects.filter(status='FINAL')[:5]
-    
-    # Get some statistics
-    total_receipts = OfficialReceipt.objects.count()
-    total_invoices = CashInvoice.objects.filter(status='FINAL').count()
-    
+
+    receipt_stats = OfficialReceipt.objects.aggregate(
+        total_revenue=Sum('amount')
+    )
+    invoice_stats = CashInvoice.objects.filter(status='FINAL').aggregate(
+        total_revenue=Sum('total_amount')
+    )
+
     context = {
         'recent_receipts': recent_receipts,
         'recent_invoices': recent_invoices,
-        'total_receipts': total_receipts,
-        'total_invoices': total_invoices,
+        'total_receipts': OfficialReceipt.objects.count(),
+        'total_receipt_revenue': receipt_stats['total_revenue'] or 0,
+        'total_invoices': CashInvoice.objects.filter(status='FINAL').count(),
+        'total_invoice_revenue': invoice_stats['total_revenue'] or 0,
     }
-    
+
     return render(request, 'home/index.html', context)
 
 def official_receipt(request):
@@ -162,14 +166,7 @@ def cash_invoice(request):
             if hasattr(invoice, 'nontax_total'):
                 invoice.nontax_total = nontax_total
             
-            # Handle action (Save Draft vs Finalize)
-            action = request.POST.get('action', 'finalize')
-            if action == 'save_draft':
-                invoice.status = 'DRAFT'
-            else:
-                invoice.status = 'FINAL'
-                
-            # Save the invoice with all data
+            invoice.status = 'FINAL'
             invoice.save()
             
             # Create invoice products
@@ -213,14 +210,11 @@ def cash_invoice(request):
                 'products': products_data
             }
             
-            if invoice.status == 'DRAFT':
-                success_message = f'Draft Invoice {invoice.invoice_number} has been saved successfully!'
-            else:
-                success_message = f'Cash Invoice {invoice.invoice_number} has been finalized successfully!'
-                if apply_vat:
-                    success_message += f' (VAT {vat_percentage}% included: GH₵{vat_amount:.2f})'
-                if nontax_total > 0:
-                    success_message += f' + Non-Tax Items: GH₵{nontax_total:.2f}'
+            success_message = f'Cash Invoice {invoice.invoice_number} has been generated successfully!'
+            if apply_vat:
+                success_message += f' (VAT {vat_percentage}% included: GH₵{vat_amount:.2f})'
+            if nontax_total > 0:
+                success_message += f' + Non-Tax Items: GH₵{nontax_total:.2f}'
             
             messages.success(request, success_message)
             return render(request, 'home/cash_invoice.html', {
@@ -291,11 +285,27 @@ def receipt_detail(request, receipt_id):
 def edit_invoice(request, invoice_id):
     invoice = get_object_or_404(CashInvoice, id=invoice_id)
     
-    if invoice.status == 'FINAL':
-        messages.error(request, 'Finalized invoices cannot be edited.')
-        return redirect('home:invoice_list')
-        
+    # Session-based authorization for editing FINAL invoices
+    auth_key = f'invoice_edit_{invoice_id}'
+    is_authorized = request.session.get(auth_key, False)
+    
+    # Handle password verification POST (from modal)
+    if request.method == 'POST' and request.POST.get('authorize') == '1':
+        password = request.POST.get('edit_password', '')
+        if request.user.check_password(password):
+            request.session[auth_key] = True
+            messages.success(request, 'Password verified. You can now edit this finalized invoice.')
+            return redirect('home:edit_invoice', invoice_id=invoice_id)
+        else:
+            messages.error(request, 'Incorrect password.')
+            return redirect('home:edit_invoice', invoice_id=invoice_id)
+    
     if request.method == 'POST':
+        # Block unauthorized edit of FINAL invoices
+        if invoice.status == 'FINAL' and not is_authorized:
+            messages.error(request, 'You must authorize with your password to edit a finalized invoice.')
+            return redirect('home:edit_invoice', invoice_id=invoice_id)
+        
         form = CashInvoiceForm(request.POST, instance=invoice)
         if form.is_valid():
             invoice = form.save(commit=False)
@@ -338,10 +348,22 @@ def edit_invoice(request, invoice_id):
                         total_amount = subtotal_amount + vat_amount
                     else:
                         messages.error(request, 'VAT percentage must be between 4% and 22%.')
-                        return redirect('home:edit_invoice', invoice_id=invoice.id)
+                        taxable_products = invoice.products.filter(is_taxable=True)
+                        nontax_items = invoice.products.filter(is_taxable=False)
+                        return render(request, 'home/cash_invoice.html', {
+                            'form': form, 'edit_mode': True, 'invoice': invoice,
+                            'taxable_products': taxable_products, 'nontax_items': nontax_items,
+                            'require_password': False, 'password_verified': True,
+                        })
                 except (ValueError, TypeError):
                     messages.error(request, 'Invalid VAT percentage value.')
-                    return redirect('home:edit_invoice', invoice_id=invoice.id)
+                    taxable_products = invoice.products.filter(is_taxable=True)
+                    nontax_items = invoice.products.filter(is_taxable=False)
+                    return render(request, 'home/cash_invoice.html', {
+                        'form': form, 'edit_mode': True, 'invoice': invoice,
+                        'taxable_products': taxable_products, 'nontax_items': nontax_items,
+                        'require_password': False, 'password_verified': True,
+                    })
             
             # Process non-tax items
             nontax_data = []
@@ -379,30 +401,25 @@ def edit_invoice(request, invoice_id):
             if hasattr(invoice, 'subtotal_amount'): invoice.subtotal_amount = subtotal_amount
             if hasattr(invoice, 'nontax_total'): invoice.nontax_total = nontax_total
             
-            action = request.POST.get('action', 'finalize')
-            if action == 'save_draft':
-                invoice.status = 'DRAFT'
-            else:
-                invoice.status = 'FINAL'
-                
+            invoice.status = 'FINAL'
             invoice.save()
             
-            # Update invoice products - safely delete existing and recreate
+            # Update invoice products
             InvoiceProduct.objects.filter(invoice=invoice).delete()
             for p in products_data:
                 InvoiceProduct.objects.create(invoice=invoice, product_description=p['desc'], quantity=p['qty'], unit_price=p['price'], total=p['total'], is_taxable=True)
             for n in nontax_data:
                 InvoiceProduct.objects.create(invoice=invoice, product_description=n['desc'], quantity=n['qty'], unit_price=n['price'], total=n['total'], is_taxable=False)
             
-            if invoice.status == 'DRAFT':
-                messages.success(request, f'Draft Invoice {invoice.invoice_number} has been updated successfully!')
-                return redirect('home:invoice_list')
-            else:
-                messages.success(request, f'Invoice {invoice.invoice_number} has been finalized successfully!')
-                return redirect('home:invoice_detail', invoice_id=invoice.id)
+            # Clear authorization after successful edit
+            if auth_key in request.session:
+                del request.session[auth_key]
+            
+            messages.success(request, f'Invoice {invoice.invoice_number} has been updated successfully!')
+            return redirect('home:invoice_detail', invoice_id=invoice.id)
     else:
         form = CashInvoiceForm(instance=invoice)
-        
+    
     taxable_products = invoice.products.filter(is_taxable=True)
     nontax_items = invoice.products.filter(is_taxable=False)
     
@@ -411,13 +428,11 @@ def edit_invoice(request, invoice_id):
         'edit_mode': True,
         'invoice': invoice,
         'taxable_products': taxable_products,
-        'nontax_items': nontax_items
+        'nontax_items': nontax_items,
+        'require_password': invoice.status == 'FINAL' and not is_authorized,
+        'password_verified': is_authorized,
     })
 
-
-from decimal import Decimal
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
 
 def invoice_detail(request, invoice_id):
     try:
@@ -497,7 +512,8 @@ def invoice_detail(request, invoice_id):
         }
         
         return render(request, 'home/invoice_detail.html', {
-            'invoice_data': invoice_data
+            'invoice_data': invoice_data,
+            'invoice': invoice,
         })
         
     except CashInvoice.DoesNotExist:

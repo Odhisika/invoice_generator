@@ -1,250 +1,236 @@
 {% extends 'base.html' %}
 {% load static humanize %}
 
-{% block title %}Issue Official Receipt - LuckyTech Innovation Ground{% endblock %}
+{% block title %}New Receipt - LuckyTech Innovation Ground{% endblock %}
 
 {% block content %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
-    <div>
-        <h1 class="page-title h2 mb-1">Official Receipt</h1>
-        <p class="page-subtitle mb-0">Fill in the details to generate a professional payment receipt</p>
-    </div>
-    <div class="header-actions">
-        <a href="{% url 'home:receipt_list' %}" class="btn btn-light px-4 border shadow-sm"
-            style="border-radius: 12px;">
-            <i class="bi bi-list-task me-2"></i>Manage Receipts
-        </a>
-    </div>
-</div>
-
-<div class="row">
+<div class="row g-4">
     <!-- Form Section -->
-    <div class="col-lg-5 mb-4">
-        <div class="dashboard-card h-100">
-            <h3 class="h5 fw-700 mb-4 pb-2 border-bottom">
-                <i class="bi bi-pencil-square me-2 text-warning"></i>Receipt Details
-            </h3>
-            <form method="post" class="receipt-form">
-                {% csrf_token %}
-                <div class="row g-3">
-                    <div class="col-md-12">
-                        <label for="received_from" class="form-label fw-600 small">Received From</label>
-                        <input type="text" class="form-control" id="received_from" name="received_from"
-                            placeholder="Full name of recipient" required>
+    <div class="col-xl-5">
+        <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h5 class="fw-700 mb-1" style="font-size: 1.1rem;">New Receipt</h5>
+                        <p class="text-muted small mb-0">Fill in the payment details</p>
                     </div>
+                    <a href="{% url 'home:receipt_list' %}" class="btn btn-light btn-sm px-3" style="border-radius: 8px;">
+                        <i class="bi bi-arrow-left me-1"></i>Back
+                    </a>
+                </div>
 
-                    <div class="col-md-6">
-                        <label for="date" class="form-label fw-600 small">Date of Payment</label>
-                        <input type="date" class="form-control" id="date" name="date" required>
-                    </div>
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
 
-                    <div class="col-md-6">
-                        <label for="amount" class="form-label fw-600 small">Amount (GH₵)</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light fw-700">₵</span>
-                            <input type="number" class="form-control fw-700" id="amount" name="amount" step="0.01"
-                                placeholder="0.00" required>
+                    <div class="mb-4">
+                        <h6 class="fw-600 text-uppercase small text-muted mb-3" style="letter-spacing: 0.5px; font-size: 0.7rem;">
+                            <i class="bi bi-person me-1"></i>Payment Information
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <input type="text" class="form-control form-control-lg" id="received_from" name="received_from"
+                                    placeholder="Received from (full name)" required
+                                    style="border-radius: 10px; font-size: 0.95rem; padding: 0.7rem 1rem;">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="date" class="form-control form-control-lg" id="date" name="date" required
+                                    style="border-radius: 10px; font-size: 0.95rem; padding: 0.7rem 1rem;">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text fw-700" style="border-radius: 10px 0 0 10px; border-color: #e2e8f0; background: #f8f9fa;">GH₵</span>
+                                    <input type="number" class="form-control form-control-lg fw-700" id="amount" name="amount" step="0.01"
+                                        placeholder="0.00" required
+                                        style="border-radius: 0 10px 10px 0; font-size: 0.95rem; padding: 0.7rem 1rem;">
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <input type="text" class="form-control" id="ghc" name="ghc"
+                                    placeholder="Amount in words (e.g. One Thousand Cedis Only)" required
+                                    style="border-radius: 10px; font-size: 0.9rem; padding: 0.6rem 1rem;">
+                            </div>
+                            <div class="col-12">
+                                <textarea class="form-control" id="purpose" name="purpose" rows="3"
+                                    placeholder="Purpose of payment (what this covers...)" required
+                                    style="border-radius: 10px; font-size: 0.9rem; padding: 0.6rem 1rem;"></textarea>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12">
-                        <label for="ghc" class="form-label fw-600 small">Amount in Words</label>
-                        <input type="text" class="form-control" id="ghc" name="ghc"
-                            placeholder="e.g. One Thousand Ghana Cedis Only" required>
+                    <hr class="my-4 opacity-25">
+
+                    <div class="mb-4">
+                        <h6 class="fw-600 text-uppercase small text-muted mb-3" style="letter-spacing: 0.5px; font-size: 0.7rem;">
+                            <i class="bi bi-gear me-1"></i>Additional Details
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="model_no" name="model_no" placeholder="Model no. (optional)"
+                                    style="border-radius: 10px; font-size: 0.9rem; padding: 0.6rem 1rem;">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="serial_no" name="serial_no" placeholder="Serial no. (optional)"
+                                    style="border-radius: 10px; font-size: 0.9rem; padding: 0.6rem 1rem;">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="cash_cheque_no" name="cash_cheque_no" placeholder="Cash/cheque ref"
+                                    style="border-radius: 10px; font-size: 0.9rem; padding: 0.6rem 1rem;">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="manager_sign" name="manager_sign" placeholder="Manager name"
+                                    style="border-radius: 10px; font-size: 0.9rem; padding: 0.6rem 1rem;">
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="col-12">
-                        <label for="purpose" class="form-label fw-600 small">Being (Purpose of Payment)</label>
-                        <textarea class="form-control" id="purpose" name="purpose" rows="3"
-                            placeholder="Description of what this payment covers..." required></textarea>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="model_no" class="form-label fw-600 small">Model No.</label>
-                        <input type="text" class="form-control" id="model_no" name="model_no" placeholder="Optional">
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="serial_no" class="form-label fw-600 small">Serial No.</label>
-                        <input type="text" class="form-control" id="serial_no" name="serial_no" placeholder="Optional">
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="cash_cheque_no" class="form-label fw-600 small">Cash/Cheque No.</label>
-                        <input type="text" class="form-control" id="cash_cheque_no" name="cash_cheque_no"
-                            placeholder="Reference #">
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="manager_sign" class="form-label fw-600 small">Manager Name</label>
-                        <input type="text" class="form-control" id="manager_sign" name="manager_sign"
-                            placeholder="For signature area">
-                    </div>
-                </div>
-
-                <div class="mt-4 pt-3 d-grid gap-2">
-                    <button type="submit" class="btn btn-warning fw-700 py-3"
-                        style="background: var(--primary-gold); border: none; color: var(--charcoal); border-radius: 12px; box-shadow: 0 4px 15px rgba(226, 209, 51, 0.3);">
-                        <i class="bi bi-file-earmark-check-fill me-2"></i>Generate Receipt
+                    <button type="submit" class="btn btn-lg w-100 fw-700 py-3"
+                        style="background: #c5a028; color: #0c0a09; border: none; border-radius: 12px; font-size: 1rem;">
+                        <i class="bi bi-file-earmark-check me-2"></i>Generate Receipt
                     </button>
-                    <button type="reset" class="btn btn-outline-secondary border-0" style="border-radius: 10px;">
-                        <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Form
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
     <!-- Preview Section -->
-    <div class="col-lg-7">
+    <div class="col-xl-7">
         {% if receipt_data %}
-        <div class="dashboard-card p-0 overflow-hidden sticky-top" style="top: 2rem; border-radius: 16px;">
-            <div
-                class="receipt-preview-header p-3 bg-dark text-white d-flex justify-content-between align-items-center">
-                <span class="fw-700"><i class="bi bi-eye me-2"></i>Receipt Preview</span>
+        <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 16px;">
+            <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom" style="background: #f8f9fa;">
+                <span class="fw-600 small text-muted"><i class="bi bi-eye me-2"></i>Preview</span>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-warning btn-sm fw-700 px-3" onclick="window.print();"
-                        style="border-radius: 8px;">
+                    <button class="btn btn-sm fw-600 px-3" onclick="window.print();"
+                        style="border-radius: 8px; background: #0c0a09; color: white; font-size: 0.8rem;">
                         <i class="bi bi-printer me-1"></i>Print
                     </button>
-                    <button class="btn btn-outline-light btn-sm px-3" onclick="downloadPDF()"
-                        style="border-radius: 8px; border-color: rgba(255,255,255,0.2);">
+                    <button class="btn btn-sm fw-600 px-3" onclick="downloadPDF()"
+                        style="border-radius: 8px; background: #c5a028; color: #0c0a09; font-size: 0.8rem;">
                         <i class="bi bi-download me-1"></i>PDF
                     </button>
                 </div>
             </div>
 
-            <!-- Printable Content -->
-            <div class="receipt-document-wrapper bg-light p-4">
-                <div class="receipt-document shadow-sm mx-auto bg-white p-3" id="printable-receipt"
-                    style="max-width: 210mm; min-height: 143mm; position: relative; border: 1px solid #eee;">
-                    <!-- Watermark -->
-                    <div
-                        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); opacity: 0.03; font-size: 8rem; font-weight: 900; pointer-events: none; white-space: nowrap; width: 100%; text-align: center; color: #000;">
-                        LUCKYTECH
-                    </div>
+            <div class="bg-light p-4">
+                <div class="bg-white shadow-sm mx-auto" id="printable-receipt"
+                    style="max-width: 210mm; min-height: 210mm; position: relative;">
 
-                    <div
-                        class="receipt-top-section d-flex justify-content-between align-items-start border-bottom pb-2 mb-2">
-                        <div class="d-flex align-items-center gap-3">
-                            <img src="{% static 'images/logo.jpg' %}" alt="Logo"
-                                style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover;">
-                            <div>
-                                <h2 class="h4 fw-900 mb-0" style="letter-spacing: 1px; color: var(--charcoal);">
-                                    LUCKYTECH</h2>
-                                <p class="small text-muted mb-0 fw-600">INNOVATION GROUND</p>
+                    <!-- Geometric accent bar -->
+                    <div style="height: 6px; background: linear-gradient(90deg, #c5a028 0%, #daa520 50%, #c5a028 100%);"></div>
+
+                    <div class="p-5">
+                        <!-- Watermark -->
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); opacity: 0.02; font-size: 8rem; font-weight: 900; pointer-events: none; white-space: nowrap; color: #000;">
+                            LUCKYTECH
+                        </div>
+
+                        <!-- Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="{% static 'images/logo.jpg' %}" alt="Logo"
+                                    style="width: 60px; height: 60px; border-radius: 10px; object-fit: cover;">
+                                <div>
+                                    <h2 class="fw-800 mb-0" style="font-size: 1.3rem; letter-spacing: 1px; color: #0c0a09;">LUCKYTECH</h2>
+                                    <p class="text-muted small fw-600 mb-0" style="font-size: 0.65rem; letter-spacing: 2px;">INNOVATION GROUND</p>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="px-3 py-1 mb-2 d-inline-block" style="background: #0c0a09; border-radius: 6px;">
+                                    <span class="fw-700 small text-white" style="font-size: 0.75rem;">RECEIPT</span>
+                                </div>
+                                <div class="text-muted fw-600" style="font-size: 0.75rem;">#{{ receipt_data.receipt_number|default:"0000000" }}</div>
+                                <div class="fw-600" style="font-size: 0.8rem; color: #333;">{{ receipt_data.date }}</div>
                             </div>
                         </div>
-                        <div class="text-end">
-                            <div class="bg-dark text-warning p-2 px-4 rounded-3 d-inline-block mb-2 shadow-sm">
-                                <span class="fw-700 h5 mb-0">OFFICIAL RECEIPT</span>
-                            </div>
-                            <div class="text-muted fw-600 small">#{{ receipt_data.receipt_number|default:"0000000" }}</div>
-                            <div class="fw-700 text-dark small mt-1">{{ receipt_data.date }}</div>
+
+                        <!-- Company Contact Bar -->
+                        <div class="d-flex justify-content-between small text-muted mb-4 pb-3 border-bottom" style="font-size: 0.75rem;">
+                            <span><i class="bi bi-geo-alt me-1" style="color: #c5a028;"></i>Adjacent Apex Bank, Koforidua</span>
+                            <span><i class="bi bi-telephone me-1" style="color: #c5a028;"></i>0591884422 / 0209522722</span>
+                            <span><i class="bi bi-globe me-1" style="color: #c5a028;"></i>www.lig.com.gh</span>
                         </div>
-                    </div>
 
-                    <div
-                        class="company-details-mini small text-muted mb-2 pb-1 border-bottom d-flex justify-content-between flex-wrap gap-2">
-                        <span><i class="bi bi-geo-alt-fill text-warning me-1"></i>Koforidua - Adjacent Apex Bank</span>
-                        <span><i class="bi bi-telephone-fill text-warning me-1"></i>0591884422 / 0209522722</span>
-                        <span><i class="bi bi-globe text-warning me-1"></i>www.lig.com.gh</span>
-                    </div>
-
-                    <div class="receipt-body">
-                        <div class="row g-2">
+                        <!-- Receipt Content -->
+                        <div class="row g-3 mb-4">
                             <div class="col-12">
-                                <div class="py-2 px-3 bg-light rounded-3 border-start border-warning border-4 shadow-sm">
-                                    <div class="small text-muted text-uppercase fw-700 mb-1"
-                                        style="font-size: 0.65rem; letter-spacing: 1px;">Received From</div>
-                                    <div class="h5 fw-700 mb-0 text-dark">{{ receipt_data.received_from }}</div>
+                                <div class="p-3 rounded-3" style="background: #f8f9fa; border-left: 4px solid #c5a028;">
+                                    <div class="text-muted text-uppercase fw-600 mb-1" style="font-size: 0.6rem; letter-spacing: 1px;">Received From</div>
+                                    <div class="h5 fw-700 mb-0" style="color: #0c0a09;">{{ receipt_data.received_from }}</div>
                                 </div>
                             </div>
 
                             <div class="col-12">
-                                <div class="py-2 px-3 border rounded-3">
-                                    <div class="small text-muted text-uppercase fw-700 mb-1"
-                                        style="font-size: 0.65rem; letter-spacing: 1px;">The Sum of</div>
-                                    <div class="fw-600 text-dark italic">"{{ receipt_data.ghc }}"</div>
+                                <div class="p-3 rounded-3 border">
+                                    <div class="text-muted text-uppercase fw-600 mb-1" style="font-size: 0.6rem; letter-spacing: 1px;">The Sum Of</div>
+                                    <div class="fw-600" style="font-style: italic; font-size: 0.9rem;">"{{ receipt_data.ghc }}"</div>
                                 </div>
                             </div>
 
-                            <div class="col-6">
-                                <div class="py-2 px-3 border rounded-3 h-100">
-                                    <div class="small text-muted text-uppercase fw-700 mb-1"
-                                        style="font-size: 0.65rem; letter-spacing: 1px;">Purpose (Being)</div>
-                                    <div class="fw-500 text-dark small">{{ receipt_data.purpose }}</div>
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-3 border h-100">
+                                    <div class="text-muted text-uppercase fw-600 mb-1" style="font-size: 0.6rem; letter-spacing: 1px;">Purpose</div>
+                                    <div class="fw-500 small">{{ receipt_data.purpose }}</div>
                                 </div>
                             </div>
 
-                            <div class="col-6">
-                                <div
-                                    class="py-2 px-3 bg-dark rounded-3 h-100 d-flex flex-column justify-content-center text-center shadow-sm">
-                                    <div class="text-warning small text-uppercase fw-700 mb-1"
-                                        style="font-size: 0.65rem; letter-spacing: 1px;">Total Amount Paid</div>
-                                    <div class="h3 fw-900 text-white mb-0">₵{{ receipt_data.amount|floatformat:2|intcomma }}</div>
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-3 h-100 d-flex flex-column justify-content-center text-center" style="background: #0c0a09;">
+                                    <div class="text-uppercase fw-600 mb-1 small" style="color: #c5a028; font-size: 0.6rem; letter-spacing: 1px;">Amount Paid</div>
+                                    <div class="h3 fw-900 mb-0 text-white">GH₵ {{ receipt_data.amount|floatformat:2|intcomma }}</div>
                                 </div>
                             </div>
 
-                            <div class="col-12 mt-2">
+                            <div class="col-12">
                                 <div class="row g-2">
                                     <div class="col-4">
-                                        <div class="small text-muted fw-700 mb-1">Model No:</div>
-                                        <div class="fw-600 border-bottom pb-1 small">
-                                            {{ receipt_data.model_no|default:"---" }}</div>
+                                        <div class="text-muted fw-600 small mb-1" style="font-size: 0.7rem;">Model No.</div>
+                                        <div class="fw-600 border-bottom pb-1" style="font-size: 0.8rem;">{{ receipt_data.model_no|default:"---" }}</div>
                                     </div>
                                     <div class="col-4">
-                                        <div class="small text-muted fw-700 mb-1">Serial No:</div>
-                                        <div class="fw-600 border-bottom pb-1 small">
-                                            {{ receipt_data.serial_no|default:"---" }}</div>
+                                        <div class="text-muted fw-600 small mb-1" style="font-size: 0.7rem;">Serial No.</div>
+                                        <div class="fw-600 border-bottom pb-1" style="font-size: 0.8rem;">{{ receipt_data.serial_no|default:"---" }}</div>
                                     </div>
                                     <div class="col-4">
-                                        <div class="small text-muted fw-700 mb-1">Ref/Cash #:</div>
-                                        <div class="fw-600 border-bottom pb-1 small">
-                                            {{ receipt_data.cash_cheque_no|default:"---" }}</div>
+                                        <div class="text-muted fw-600 small mb-1" style="font-size: 0.7rem;">Ref / Cheque</div>
+                                        <div class="fw-600 border-bottom pb-1" style="font-size: 0.8rem;">{{ receipt_data.cash_cheque_no|default:"---" }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="receipt-signature mt-2 pt-1 d-flex justify-content-between align-items-end">
-                        <div class="text-center" style="width: 150px;">
-                            <div class="small text-muted mb-1 fw-700">Recipient Sign</div>
-                            <div style="height: 25px; border-bottom: 1px solid #dee2e6;"></div>
-                        </div>
-                        <div class="text-center" style="width: 200px;">
-                            <div class="small text-muted mb-1 fw-700">
-                                Manager: {{ receipt_data.manager_sign|default:"LUCKYTECH" }}</div>
-                            <div style="height: 25px; border-bottom: 2px solid var(--charcoal); position: relative;">
-                                <div
-                                    style="position: absolute; bottom: 3px; right: 20px; font-family: 'Brush Script MT', cursive; font-size: 1.3rem; opacity: 0.5; color: var(--charcoal);">
-                                    LuckyTech
+                        <!-- Signatures -->
+                        <div class="d-flex justify-content-between align-items-end mt-4 pt-3">
+                            <div class="text-center" style="width: 150px;">
+                                <div class="text-muted fw-600 text-uppercase mb-2" style="font-size: 0.6rem; letter-spacing: 1px;">Recipient</div>
+                                <div style="height: 30px; border-bottom: 1px solid #dee2e6;"></div>
+                            </div>
+                            <div class="text-center" style="width: 200px;">
+                                <div class="text-muted fw-600 text-uppercase mb-2" style="font-size: 0.6rem; letter-spacing: 1px;">Authorized Signatory</div>
+                                <div style="height: 30px; border-bottom: 2px solid #c5a028; position: relative;">
+                                    <span class="fw-700 small" style="position: absolute; bottom: 4px; right: 15px; font-size: 0.8rem;">{{ receipt_data.manager_sign|default:"LUCKYTECH" }}</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="receipt-footer-text text-center text-muted x-small mt-2 pt-0">
-                        Computer & IT Experts | Networking | Web Dev | Training | Innovative Products
-                        <br>
-                        <span class="fw-700">Merchant ID # 972913 | Professional Service Guaranteed</span>
+                        <!-- Footer -->
+                        <div class="text-center text-muted mt-5 pt-3 border-top small" style="font-size: 0.7rem;">
+                            <span class="fw-600" style="color: #333;">LuckyTech Innovation Ground</span> | Computer &amp; IT Experts | Networking | Web Dev | Training<br>
+                            Merchant ID # 972913 | Professional Service Guaranteed
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         {% else %}
-        <div
-            class="dashboard-card h-100 d-flex flex-column justify-content-center align-items-center py-5 text-center bg-light border-0">
-            <div class="card-icon-wrapper mb-4 opacity-50"
-                style="width: 100px; height: 100px; font-size: 3rem; background: rgba(0,0,0,0.05); border: none; color: #aaa;">
-                <i class="bi bi-file-earmark-text"></i>
+        <div class="card border-0 shadow-sm" style="border-radius: 16px; min-height: 500px;">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-5">
+                <div class="mb-4" style="width: 80px; height: 80px; background: #f8f9fa; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-file-earmark-text" style="font-size: 2rem; color: #ccc;"></i>
+                </div>
+                <h5 class="fw-700 text-muted mb-2">Receipt Preview</h5>
+                <p class="text-muted small mx-auto" style="max-width: 280px;">Fill in the form and generate the receipt to see a live preview here.</p>
             </div>
-            <h4 class="fw-700 text-muted">Awaiting Input</h4>
-            <p class="text-muted small mx-auto" style="max-width: 250px;">Fill out the form on the left to see a live
-                preview of the receipt document.</p>
         </div>
         {% endif %}
     </div>
@@ -254,88 +240,44 @@
 
 {% block extra_css %}
 <style>
-    .fw-900 {
-        font-weight: 900;
+    .fw-800 { font-weight: 800; }
+    .fw-700 { font-weight: 700; }
+    .fw-600 { font-weight: 600; }
+    .fw-500 { font-weight: 500; }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #c5a028;
+        box-shadow: 0 0 0 3px rgba(197, 160, 40, 0.1);
     }
 
-    .fw-700 {
-        font-weight: 700;
+    .form-control-lg::placeholder {
+        color: #adb5bd;
+        font-weight: 400;
     }
 
-    .fw-600 {
-        font-weight: 600;
-    }
-
-    .fw-500 {
-        font-weight: 500;
-    }
-
-    .x-small {
-        font-size: 0.7rem;
-    }
-
-    .italic {
-        font-style: italic;
-    }
-
-    .receipt-document {
+    #printable-receipt {
         font-family: 'Inter', sans-serif;
         color: #333;
-        line-height: 1.4;
+        line-height: 1.5;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 
     @media print {
-        @page {
-            margin: 0;
-        }
-
-        /* Hide UI elements */
-        .navbar,
-        footer,
-        .page-header,
-        .receipt-preview-header,
-        .header-actions,
-        .col-lg-5,
-        .btn,
-        .alert {
+        @page { margin: 0; }
+        .navbar, footer, .page-header, .btn, .alert,
+        .col-xl-5, .card-body, .bg-light.p-4,
+        .d-flex.align-items-center.justify-content-between.px-4.py-3 {
             display: none !important;
         }
-
-        /* Reset layout for print */
-        body {
-            background: white !important;
-            margin: 0 !important;
-            padding: 0 !important;
+        body { background: white !important; margin: 0 !important; padding: 0 !important; }
+        .container-fluid, .row, .col-xl-7 {
+            padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: none !important;
         }
-
-        .dashboard-wrapper,
-        .container-fluid,
-        .row,
-        .col-lg-7 {
-            padding: 0 !important;
-            margin: 0 !important;
-            width: 100% !important;
-            max-width: none !important;
-        }
-
-        .dashboard-card {
-            border: none !important;
-            box-shadow: none !important;
-            background: transparent !important;
-        }
-
-        .receipt-document-wrapper {
-            padding: 0 !important;
-            background: transparent !important;
-        }
-
+        .card { border: none !important; box-shadow: none !important; background: transparent !important; }
         #printable-receipt {
-            position: static !important;
-            margin: 0 !important;
-            padding: 20px !important;
-            width: 100% !important;
-            border: none !important;
-            box-shadow: none !important;
+            position: static !important; margin: 0 !important; padding: 20px !important;
+            width: 100% !important; border: none !important; box-shadow: none !important;
         }
     }
 </style>
@@ -348,8 +290,7 @@
             filename: 'LuckyTech_Receipt_{{ receipt_data.receipt_number }}.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 3, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: 'avoid-all' }
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
         html2pdf().set(opt).from(element).save();
     }
