@@ -8,6 +8,8 @@ from .models import OfficialReceipt, CashInvoice, InvoiceProduct
 from .forms import OfficialReceiptForm, CashInvoiceForm, InvoiceProductForm
 from decimal import Decimal
 import re
+from django.conf import settings
+from django.contrib.auth.hashers import check_password
 from django.views.decorators.http import require_POST
 
 def index(request):
@@ -292,7 +294,7 @@ def edit_invoice(request, invoice_id):
     # Handle password verification POST (from modal)
     if request.method == 'POST' and request.POST.get('authorize') == '1':
         password = request.POST.get('edit_password', '')
-        if request.user.check_password(password):
+        if check_password(password, settings.INVOICE_EDIT_PASSWORD_HASH):
             request.session[auth_key] = True
             messages.success(request, 'Password verified. You can now edit this finalized invoice.')
             return redirect('home:edit_invoice', invoice_id=invoice_id)

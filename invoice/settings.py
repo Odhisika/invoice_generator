@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from decouple import config
+from django.contrib.auth.hashers import make_password
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -148,6 +149,9 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+
+# Invoice edit password (hashed for storage, compared via check_password)
+INVOICE_EDIT_PASSWORD_HASH = make_password(config('INVOICE_EDIT_PASSWORD', default='changeme'))
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
